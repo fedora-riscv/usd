@@ -1,0 +1,11 @@
+diff -up USD-20.05/cmake/macros/Public.cmake.sover USD-20.05/cmake/macros/Public.cmake
+--- USD-20.05/cmake/macros/Public.cmake.sover	2020-09-16 16:40:05.489056637 +0200
++++ USD-20.05/cmake/macros/Public.cmake	2020-09-16 16:38:43.784595457 +0200
+@@ -926,6 +926,7 @@ function(pxr_toplevel_prologue)
+                     FOLDER "${folder}"
+                     PREFIX "${PXR_LIB_PREFIX}"
+                     IMPORT_PREFIX "${PXR_LIB_PREFIX}"
++                    SOVERSION ${PXR_MAJOR_VERSION}
+             )
+             _get_install_dir("lib" libInstallPrefix)
+             install(
