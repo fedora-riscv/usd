@@ -12,7 +12,7 @@
 
 Name:           usd
 Version:        21.05
-Release:        2%{?dist}
+Release:        3%{?dist}
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is ASL 2.0 except:
@@ -103,6 +103,7 @@ Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
       
 # This package is only available for x86_64
 # Will fail to build on other architectures
+# https://bugzilla.redhat.com/show_bug.cgi?id=1960848
 ExclusiveArch:  x86_64
 
 %description
@@ -319,6 +320,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %endif
 
 %changelog
+* Fri May 21 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-3
+- Rebuild for ptex 2.4.0
+
 * Fri May 7 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-2
 - Multiple fixes based on packaging review 
 - Add comment for multiple licenses
