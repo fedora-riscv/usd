@@ -12,7 +12,7 @@
 
 Name:           usd
 Version:        21.05
-Release:        3%{?dist}
+Release:        4%{?dist}
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is ASL 2.0 except:
@@ -320,6 +320,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %endif
 
 %changelog
+* Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 21.05-4
+- Rebuilt for Python 3.10
+
 * Fri May 21 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-3
 - Rebuild for ptex 2.4.0
 
