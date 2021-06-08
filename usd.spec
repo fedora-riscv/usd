@@ -6,13 +6,13 @@
 %bcond_without  embree
 %bcond_without  imaging
 %bcond_with     jemalloc
-%bcond_without  openshading
+%bcond_with     openshading
 %bcond_without  python3
 %bcond_with     test
 
 Name:           usd
 Version:        21.05
-Release:        4%{?dist}
+Release:        5%{?dist}
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is ASL 2.0 except:
@@ -320,6 +320,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %endif
 
 %changelog
+* Sun Jun 6 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-5
+- Disable open shading language support
+
 * Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 21.05-4
 - Rebuilt for Python 3.10
 
