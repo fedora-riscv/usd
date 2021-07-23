@@ -12,7 +12,7 @@
 
 Name:           usd
 Version:        21.05
-Release:        5%{?dist}
+Release:        6%{?dist}
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is ASL 2.0 except:
@@ -320,6 +320,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %endif
 
 %changelog
+* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 21.05-6
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
+
 * Sun Jun 6 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-5
 - Disable open shading language support
 
