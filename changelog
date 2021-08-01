@@ -4,9 +4,6 @@
 - Resolves rhbz#1982974
 - Uses autorelease and autochangelog macros
 
-* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 21.05-6
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
-
 * Sun Jun 6 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-5
 - Disable open shading language support
 
