@@ -7,12 +7,14 @@
 %bcond_without  imaging
 %bcond_with     jemalloc
 %bcond_with     openshading
+%bcond_with     ocio
+%bcond_without  oiio
 %bcond_without  python3
 %bcond_with     test
 
 Name:           usd
-Version:        21.05
-Release:        6%{?dist}
+Version:        21.08
+Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is ASL 2.0 except:
@@ -41,9 +43,6 @@ Source1:        org.open%{name}.%{name}view.desktop
 # https://github.com/PixarAnimationStudios/USD/issues/1387
 Patch1:         %{srcname}-20.05-soversion.patch
 
-# https://bugzilla.redhat.com/show_bug.cgi?id=1895567#c7
-Patch2:         %{name}-21.02-demangle-fix.patch
-
 # Base
 BuildRequires:  boost-devel
 BuildRequires:  boost-program-options
@@ -64,22 +63,28 @@ BuildRequires:  graphviz
 %if %{with embree}
 BuildRequires:  embree-devel
 %endif
+%if %{with openshading}
 BuildRequires:  openshadinglanguage
+BuildRequires:  pkgconfig(oslexec)
+%endif
 BuildRequires:  opensubdiv-devel
 BuildRequires:  openvdb-devel
 BuildRequires:  pkgconfig(dri)
 %if %{with jemalloc}
 BuildRequires:  pkgconfig(jemalloc)
 %endif
+%if %{with ocio}
 BuildRequires:  pkgconfig(OpenColorIO)
+%endif
+%if %{with oiio}
 BuildRequires:  pkgconfig(OpenImageIO)
-BuildRequires:  pkgconfig(oslexec)
+%endif
+BuildRequires:  pkgconfig(OpenEXR)
 BuildRequires:  pkgconfig(Ptex)
 %endif
 %if %{with alembic}
 BuildRequires:  cmake(Alembic)
 BuildRequires:  hdf5-devel
-BuildRequires:  pkgconfig(OpenEXR)
 %endif
 
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
@@ -243,9 +248,11 @@ chmod +x uic-wrapper
      -DPXR_BUILD_EMBREE_PLUGIN=ON \
      -DEMBREE_LOCATION=%{_prefix} \
 %endif
-%if %{with imaging}
-     -DPXR_BUILD_OPENIMAGEIO_PLUGIN=ON \
+%if %{with ocio}
      -DPXR_BUILD_OPENCOLORIO_PLUGIN=ON \
+%endif
+%if %{with oiio}
+     -DPXR_BUILD_OPENIMAGEIO_PLUGIN=ON \
 %endif
 %if %{with openshading}
      -DPXR_ENABLE_OSL_SUPPORT=ON \
@@ -320,46 +327,4 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %endif
 
 %changelog
-* Fri Jul 23 2021 Fedora Release Engineering <releng@fedoraproject.org> - 21.05-6
-- Rebuilt for https://fedoraproject.org/wiki/Fedora_35_Mass_Rebuild
-
-* Sun Jun 6 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-5
-- Disable open shading language support
-
-* Fri Jun 04 2021 Python Maint <python-maint@redhat.com> - 21.05-4
-- Rebuilt for Python 3.10
-
-* Fri May 21 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-3
-- Rebuild for ptex 2.4.0
-
-* Fri May 7 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-2
-- Multiple fixes based on packaging review 
-- Add comment for multiple licenses
-- Add requires for python subpackage
-- Resolves rhbz#1895567
-
-* Fri Apr 9 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.05-1
-- Update to 21.05
-- Multiple fixes based on packaging review 
-- Drop forced out of source build line
-
-* Fri Apr 9 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.02-4
-- Multiple fixes based on package review
-
-* Fri Feb 05 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.02-3
-- Patch for system header position causin the build to fail
-
-* Mon Jan 25 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.02-2
-- Update c++ requirement to 17
-
-* Wed Jan 20 2021 Luya Tshimbalanga <luya@fedoraproject.org> - 21.02-1
-- Update to 21.02
-- Move isa to devel subpackage
-- Drop glew dependency
-
-* Thu Nov 12 2020 Luya Tshimbalanga <luya@fedoraproject.org> - 20.11-2
-- Add missing isa for arch specific
-- Strip the Carriage Returns on NOTICE.txt
-
-* Thu Oct 22 2020 Luya Tshimbalanga <luya@fedoraproject.org> - 20.11-1
-- Initial package
+%autochangelog
