@@ -74,7 +74,8 @@ BuildRequires:  pkgconfig(dri)
 BuildRequires:  pkgconfig(jemalloc)
 %endif
 %if %{with ocio}
-BuildRequires:  pkgconfig(OpenColorIO)
+# usd is not yet compatible with OpenColorIO 2 so use compat package.
+BuildRequires:  pkgconfig(OpenColorIO) < 2
 %endif
 %if %{with oiio}
 BuildRequires:  pkgconfig(OpenImageIO)
