@@ -43,6 +43,9 @@ Source1:        org.open%{name}.%{name}view.desktop
 # https://github.com/PixarAnimationStudios/USD/issues/1387
 Patch1:         %{srcname}-20.05-soversion.patch
 
+# https://github.com/PixarAnimationStudios/USD/issues/1591
+Patch2:         USD-21.08-OpenEXR3.patch
+
 # Base
 BuildRequires:  boost-devel
 BuildRequires:  boost-program-options
@@ -80,7 +83,8 @@ BuildRequires:  pkgconfig(OpenColorIO) < 2
 %if %{with oiio}
 BuildRequires:  pkgconfig(OpenImageIO)
 %endif
-BuildRequires:  pkgconfig(OpenEXR)
+BuildRequires:  cmake(OpenEXR)
+BuildRequires:  cmake(Imath)
 BuildRequires:  pkgconfig(Ptex)
 %endif
 %if %{with alembic}
@@ -221,9 +225,16 @@ chmod +x uic-wrapper
 
 # Fix python3 support    
 # https://github.com/PixarAnimationStudios/USD/issues/1419    
+
+flags="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
+# Patch2 was not good enough to get the include path for Imath everywhere it
+# was needed. Add it globally.
+# https://github.com/PixarAnimationStudios/USD/issues/1591
+flags="${flags} $(pkgconf --cflags Imath)"
+
 %cmake \
-     -DCMAKE_CXX_FLAGS_RELEASE="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
-     -DCMAKE_C_FLAGS_RELEASE="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
+     -DCMAKE_CXX_FLAGS_RELEASE="${flags}" \
+     -DCMAKE_C_FLAGS_RELEASE="${flags}" \
      -DCMAKE_CXX_STANDARD=17 \
      -DCMAKE_EXE_LINKER_FLAGS="-pie" \
      -DCMAKE_SKIP_RPATH=ON \
