@@ -5,7 +5,9 @@
 %bcond_with     documentation
 %bcond_without  embree
 %bcond_without  imaging
-%bcond_with     jemalloc
+# We must keep jemalloc enabled to work around
+# https://github.com/PixarAnimationStudios/USD/issues/1592.
+%bcond_without  jemalloc
 %bcond_with     openshading
 %bcond_with     ocio
 %bcond_without  oiio
