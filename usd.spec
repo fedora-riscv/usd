@@ -9,8 +9,9 @@
 # https://github.com/PixarAnimationStudios/USD/issues/1592.
 %bcond_without  jemalloc
 %bcond_with     openshading
+%bcond_with     openvdb
 %bcond_with     ocio
-%bcond_without  oiio
+%bcond_with     oiio
 %bcond_without  python3
 %bcond_with     test
 
@@ -73,7 +74,9 @@ BuildRequires:  openshadinglanguage
 BuildRequires:  pkgconfig(oslexec)
 %endif
 BuildRequires:  opensubdiv-devel
+%if %{with openvdb}
 BuildRequires:  openvdb-devel
+%endif
 BuildRequires:  pkgconfig(dri)
 %if %{with jemalloc}
 BuildRequires:  pkgconfig(jemalloc)
@@ -249,7 +252,9 @@ flags="${flags} $(pkgconf --cflags Imath)"
      -DPXR_BUILD_EXAMPLES=OFF \
      -DPXR_BUILD_TUTORIALS=OFF \
      -DPXR_BUILD_TESTS=%{?with_test:ON}%{!?with_test:OFF} \
+%if %{with openvdb}
      -DPXR_ENABLE_OPENVDB_SUPPORT=ON \
+%endif
      -DPXR_INSTALL_LOCATION="%{_libdir}/%{name}/plugin" \
 %if %{with jemalloc}
      -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
