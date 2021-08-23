@@ -97,6 +97,10 @@ BuildRequires:  cmake(Alembic)
 BuildRequires:  hdf5-devel
 %endif
 
+# Header-only library: -static is for tracking per guidelines
+BuildRequires:  stb_image_resize-devel
+BuildRequires:  stb_image_resize-static
+
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 %if %{with python3}
 Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
@@ -111,18 +115,19 @@ Provides:       bundled(lz4) = 1.9.2
 Provides:       bundled(pugixml) = 1.9
 Provides:       bundled(rapidjson) = 1.0.2
 Provides:       bundled(SPIRV-Reflect) = 1.0
-Provides:       bundled(stb_image) = 2.19
-Provides:       bundled(stb_image_resize) = 0.95
-Provides:       bundled(stb_image_write) = 1.09
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
-      
+# Both of these are packaged in Fedora, but USD uses patched versions, so they
+# must be bundled.
+Provides:       bundled(stb_image) = 2.19
+Provides:       bundled(stb_image_write) = 1.09
+
 # This package is only available for x86_64
 # Will fail to build on other architectures
 # https://bugzilla.redhat.com/show_bug.cgi?id=1960848
 ExclusiveArch:  x86_64
 
 %description
-Universal Scene Description (USD) is a time-sampled scene 
+Universal Scene Description (USD) is a time-sampled scene
 description for interchange between graphics applications.
 
 %package        libs
@@ -172,7 +177,7 @@ Python language bindings for the Universal Scene Description (USD) C++ API
 %package        doc
 Summary:        Documentation for usd
 BuildArch:      noarch
-      
+
 %description doc
 Documentation for the Universal Scene Description (USD) C++ API
 %endif
@@ -180,7 +185,7 @@ Documentation for the Universal Scene Description (USD) C++ API
 %prep
 %autosetup -p1 -n %{srcname}-%{version}
 
-# Convert NOTICE.txt from CRNL line encoding 
+# Convert NOTICE.txt from CRNL line encoding
 dos2unix NOTICE.txt
 
 %if %{with python3}
@@ -200,6 +205,9 @@ ln -s %{_datadir}/fonts/google-roboto pxr/usdImaging/usdviewq/fonts/Roboto
 ln -s %{_datadir}/fonts/google-roboto-mono \
     pxr/usdImaging/usdviewq/fonts/Roboto_Mono
 
+# Unbundle stb_image_resize:
+ln -svf %{_includedir}/stb_image_resize.h pxr/imaging/hio/stb/
+
 # Use c++17 standard otherwise build fails
 sed -i 's|set(CMAKE_CXX_STANDARD 14)|set(CMAKE_CXX_STANDARD 17)|g' \
         cmake/defaults/CXXDefaults.cmake
@@ -215,7 +223,7 @@ sed -i 's|lib/usd|%{_libdir}/usd|g' cmake/macros/Public.cmake
 sed -i 's|"lib"|%{_libdir}|g' cmake/macros/Public.cmake
 sed -i 's|plugin/usd|%{_libdir}/usd/plugin|g' \
         cmake/macros/Public.cmake
-        
+
 # Fix cmake directory destination
 sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
 
@@ -228,8 +236,8 @@ exec uic-qt5 -g python "$@"
 EOF
 chmod +x uic-wrapper
 
-# Fix python3 support    
-# https://github.com/PixarAnimationStudios/USD/issues/1419    
+# Fix python3 support
+# https://github.com/PixarAnimationStudios/USD/issues/1419
 
 flags="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
 # Patch2 was not good enough to get the include path for Imath everywhere it
@@ -298,7 +306,7 @@ mv %{buildroot}%{python3_sitelib}/* %{buildroot}%{python3_sitearch}
 desktop-file-install                                    \
 --dir=%{buildroot}%{_datadir}/applications              \
 %{SOURCE1}
-        
+
 # Remove arch-specific code in /usr/share
 find %{buildroot}%{_datadir}/%{name}/examples -name '*.so' -print -delete
 
@@ -307,7 +315,7 @@ mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
         %{buildroot}%{python3_sitearch}/pxr/
 mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
         %{buildroot}%{python3_sitearch}/pxr/Usdviewq/
-        
+
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{?with_test:%ctest}
