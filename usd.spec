@@ -124,7 +124,7 @@ Provides:       bundled(stb_image_write) = 1.09
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
 # https://bugzilla.redhat.com/show_bug.cgi?id=1960848
-ExclusiveArch:  x86_64 %{arm64}
+ExclusiveArch:  aarch64 x86_64
 
 %description
 Universal Scene Description (USD) is a time-sampled scene
