@@ -40,7 +40,7 @@ Summary:        3D VFX pipeline interchange file format
 # do not contribute their license terms to the built RPMs.)
 License:        ASL 2.0 and BSD and MIT and (MIT or Unlicense)
 URL:            http://www.openusd.org/
-Source0:         https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:        https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:        org.open%{name}.%{name}view.desktop
 
 # https://github.com/PixarAnimationStudios/USD/issues/1387
@@ -48,6 +48,17 @@ Patch1:         %{srcname}-20.05-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
+
+# Backport 8f9bb9563980b41e7695148b63bf09f7abd38a41 from dev branch:
+# hio: Update stb_image code to latest versions, enable UTF-8 filename support
+# for Windows
+#
+# This gives us Pixar-specific patches that we can apply to the Fedora-packaged
+# stb libraries. These include patches for CVE-2021-42715 and CVE-2021-42716,
+# not yet merged upstream.
+#
+# It also ensures that a fix for CVE-2021-28021 (RHBZ#2015229) is present.
+Patch3:         https://github.com/PixarAnimationStudios/USD/commit/8f9bb9563980b41e7695148b63bf09f7abd38a41.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -102,6 +113,12 @@ BuildRequires:  hdf5-devel
 %endif
 
 # Header-only library: -static is for tracking per guidelines
+# stb_image 2.27-0.7 is the minimum EVR to contain fixes for all of
+# CVE-2021-28021, CVE-2021-42715, and CVE-2021-42716.
+BuildRequires:  stb_image-devel >= 2.27-0.7
+BuildRequires:  stb_image-static
+BuildRequires:  stb_image_write-devel
+BuildRequires:  stb_image_write-static
 BuildRequires:  stb_image_resize-devel
 BuildRequires:  stb_image_resize-static
 
@@ -130,13 +147,6 @@ Provides:       bundled(rapidjson) = 1.0.2
 Provides:       bundled(SPIRV-Reflect) = 1.0
 # Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
-
-# Both of these are packaged in Fedora, but USD uses patched versions, so they
-# must be bundled.
-# Version from: pxr/imaging/hio/stb/stb_image.h
-Provides:       bundled(stb_image) = 2.19
-# Version from: pxr/imaging/hio/stb/stb_image_write.h
-Provides:       bundled(stb_image_write) = 1.09
 
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
@@ -222,8 +232,12 @@ ln -s %{_datadir}/fonts/google-roboto pxr/usdImaging/usdviewq/fonts/Roboto
 ln -s %{_datadir}/fonts/google-roboto-mono \
     pxr/usdImaging/usdviewq/fonts/Roboto_Mono
 
-# Unbundle stb_image_resize:
-ln -svf %{_includedir}/stb_image_resize.h pxr/imaging/hio/stb/
+# Unbundle stb_image, stb_image_write, stb_image_resize:
+pushd pxr/imaging/hio/stb
+cp -p %{_includedir}/stb_image.h %{_includedir}/stb_image_write.h .
+cat stb_image.patch stb_image_write.patch | patch -p1
+ln -svf %{_includedir}/stb_image_resize.h ./
+popd
 
 # Use c++17 standard otherwise build fails
 sed -i 's|set(CMAKE_CXX_STANDARD 14)|set(CMAKE_CXX_STANDARD 17)|g' \
