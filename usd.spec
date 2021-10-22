@@ -113,16 +113,29 @@ Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
 # Upstream bundles
 # Filed ticket to convince upstream to use system libraries
 # https://github.com/PixarAnimationStudios/USD/issues/1490
+# Version from: pxr/base/tf/pxrDoubleConversion/README
 Provides:       bundled(double-conversion) = 2.0.0
+# Version from: pxr/base/gf/ilmbase_half.README
 Provides:       bundled(ilmbase) = 2.5.3
+# Version from: pxr/base/tf/pxrLZ4/lz4.h (LZ4_VERSION_{MAJOR,MINOR_PATCH})
 Provides:       bundled(lz4) = 1.9.2
+# Version from:
+# third_party/renderman-24/plugin/rmanArgsParser/pugixml/pugiconfig.hpp
+# (header comment)
 Provides:       bundled(pugixml) = 1.9
+# Version from: pxr/base/js/rapidjson/rapidjson.h
+# (RAPIDJSON_{MAJOR,MINOR,PATCH}_VERSION)
 Provides:       bundled(rapidjson) = 1.0.2
+# Version from: pxr/imaging/hgiVulkan/spirv_reflect.h (header comment)
 Provides:       bundled(SPIRV-Reflect) = 1.0
+# Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
+
 # Both of these are packaged in Fedora, but USD uses patched versions, so they
 # must be bundled.
+# Version from: pxr/imaging/hio/stb/stb_image.h
 Provides:       bundled(stb_image) = 2.19
+# Version from: pxr/imaging/hio/stb/stb_image_write.h
 Provides:       bundled(stb_image_write) = 1.09
 
 # This package is only available for x86_64 and aarch64
