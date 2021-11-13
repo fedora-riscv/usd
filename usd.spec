@@ -16,7 +16,7 @@
 %bcond_with     test
 
 Name:           usd
-Version:        21.08
+Version:        21.11
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -48,6 +48,10 @@ Patch1:         %{srcname}-20.05-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
+
+# Fix compiling with -Werror=format-security
+# https://github.com/PixarAnimationStudios/USD/pull/1676
+Patch3:         1676.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -340,7 +344,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_ms.so.%{libmajor}
+%{_libdir}/lib%{name}_%{name}_ms.so.%{libmajor}
 %{_libdir}/%{name}
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
@@ -348,7 +352,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
 %{_libdir}/cmake/*
-%{_libdir}/lib%{name}_ms.so
+%{_libdir}/lib%{name}_%{name}_ms.so
 %{_libdir}/%{name}/%{name}/resources/codegenTemplates/
 
 %if %{with documentation}
