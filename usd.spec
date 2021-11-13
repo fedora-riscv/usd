@@ -40,7 +40,7 @@ Summary:        3D VFX pipeline interchange file format
 # do not contribute their license terms to the built RPMs.)
 License:        ASL 2.0 and BSD and MIT and (MIT or Unlicense)
 URL:            http://www.openusd.org/
-Source0:         https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
+Source0:        https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:        org.open%{name}.%{name}view.desktop
 
 # https://github.com/PixarAnimationStudios/USD/issues/1387
@@ -106,6 +106,12 @@ BuildRequires:  hdf5-devel
 %endif
 
 # Header-only library: -static is for tracking per guidelines
+# stb_image 2.27-0.7 is the minimum EVR to contain fixes for all of
+# CVE-2021-28021, CVE-2021-42715, and CVE-2021-42716.
+BuildRequires:  stb_image-devel >= 2.27-0.7
+BuildRequires:  stb_image-static
+BuildRequires:  stb_image_write-devel
+BuildRequires:  stb_image_write-static
 BuildRequires:  stb_image_resize-devel
 BuildRequires:  stb_image_resize-static
 
@@ -117,17 +123,23 @@ Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
 # Upstream bundles
 # Filed ticket to convince upstream to use system libraries
 # https://github.com/PixarAnimationStudios/USD/issues/1490
+# Version from: pxr/base/tf/pxrDoubleConversion/README
 Provides:       bundled(double-conversion) = 2.0.0
+# Version from: pxr/base/gf/ilmbase_half.README
 Provides:       bundled(ilmbase) = 2.5.3
+# Version from: pxr/base/tf/pxrLZ4/lz4.h (LZ4_VERSION_{MAJOR,MINOR_PATCH})
 Provides:       bundled(lz4) = 1.9.2
+# Version from:
+# third_party/renderman-24/plugin/rmanArgsParser/pugixml/pugiconfig.hpp
+# (header comment)
 Provides:       bundled(pugixml) = 1.9
+# Version from: pxr/base/js/rapidjson/rapidjson.h
+# (RAPIDJSON_{MAJOR,MINOR,PATCH}_VERSION)
 Provides:       bundled(rapidjson) = 1.0.2
+# Version from: pxr/imaging/hgiVulkan/spirv_reflect.h (header comment)
 Provides:       bundled(SPIRV-Reflect) = 1.0
+# Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
-# Both of these are packaged in Fedora, but USD uses patched versions, so they
-# must be bundled.
-Provides:       bundled(stb_image) = 2.19
-Provides:       bundled(stb_image_write) = 1.09
 
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
@@ -213,8 +225,12 @@ ln -s %{_datadir}/fonts/google-roboto pxr/usdImaging/usdviewq/fonts/Roboto
 ln -s %{_datadir}/fonts/google-roboto-mono \
     pxr/usdImaging/usdviewq/fonts/Roboto_Mono
 
-# Unbundle stb_image_resize:
-ln -svf %{_includedir}/stb_image_resize.h pxr/imaging/hio/stb/
+# Unbundle stb_image, stb_image_write, stb_image_resize:
+pushd pxr/imaging/hio/stb
+cp -p %{_includedir}/stb_image.h %{_includedir}/stb_image_write.h .
+cat stb_image.patch stb_image_write.patch | patch -p1
+ln -svf %{_includedir}/stb_image_resize.h ./
+popd
 
 # Use c++17 standard otherwise build fails
 sed -i 's|set(CMAKE_CXX_STANDARD 14)|set(CMAKE_CXX_STANDARD 17)|g' \
