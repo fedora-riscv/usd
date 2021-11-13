@@ -1,0 +1,54 @@
+From 0f6c20fa64a6b2e84cd966aa210570576fe1fcc9 Mon Sep 17 00:00:00 2001
+From: "Benjamin A. Beasley" <code@musicinmybrain.net>
+Date: Sat, 6 Nov 2021 22:52:12 -0400
+Subject: [PATCH] Fix #1675
+
+Stop accidentally treating a message as a printf-style format string in
+three places.
+
+See details in issue #1675.
+---
+ pxr/imaging/hd/dirtyList.cpp        | 2 +-
+ pxr/imaging/hd/renderIndex.cpp      | 2 +-
+ pxr/imaging/hdSt/drawItemsCache.cpp | 2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
+
+diff --git a/pxr/imaging/hd/dirtyList.cpp b/pxr/imaging/hd/dirtyList.cpp
+index 7fc798c336..1bd2600f6c 100644
+--- a/pxr/imaging/hd/dirtyList.cpp
++++ b/pxr/imaging/hd/dirtyList.cpp
+@@ -191,7 +191,7 @@ HdDirtyList::UpdateRenderTagsAndReprSelectors(
+                 std::stringstream ss;
+                 ss << "Resetting tracked reprs in dirty list from "
+                    << _trackedReprs << " to " << reprs << "\n";
+-                TfDebug::Helper().Msg(ss.str().c_str());
++                TfDebug::Helper().Msg(ss.str());
+             }
+             _trackedReprs = reprs;
+             trackedReprsChanged = true;
+diff --git a/pxr/imaging/hd/renderIndex.cpp b/pxr/imaging/hd/renderIndex.cpp
+index 1503cc6988..b251c970b2 100644
+--- a/pxr/imaging/hd/renderIndex.cpp
++++ b/pxr/imaging/hd/renderIndex.cpp
+@@ -1412,7 +1412,7 @@ HdRenderIndex::SyncAll(HdTaskSharedPtrVector *tasks,
+                     << ratioNonVarying * 100.0f << "% ("
+                     << numNonVarying << " / "  << numDirtyRprims << ") \n";
+ 
+-                TfDebug::Helper().Msg(ss.str().c_str());
++                TfDebug::Helper().Msg(ss.str());
+             }
+         }
+     }
+diff --git a/pxr/imaging/hdSt/drawItemsCache.cpp b/pxr/imaging/hdSt/drawItemsCache.cpp
+index 1be6aec721..61bc6794e5 100644
+--- a/pxr/imaging/hdSt/drawItemsCache.cpp
++++ b/pxr/imaging/hdSt/drawItemsCache.cpp
+@@ -114,7 +114,7 @@ HdSt_DrawItemsCache::GetDrawItems(
+             << collection << ", render tags " << renderTags << "\n";
+         }
+ 
+-        TfDebug::Helper().Msg(ss.str().c_str());
++        TfDebug::Helper().Msg(ss.str());
+     }
+     
+     if (cacheMiss || staleEntry) {
