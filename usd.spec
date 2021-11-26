@@ -16,7 +16,7 @@
 %bcond_with     test
 
 Name:           usd
-Version:        21.08
+Version:        21.11
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -49,16 +49,9 @@ Patch1:         %{srcname}-20.05-soversion.patch
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
 
-# Backport 8f9bb9563980b41e7695148b63bf09f7abd38a41 from dev branch:
-# hio: Update stb_image code to latest versions, enable UTF-8 filename support
-# for Windows
-#
-# This gives us Pixar-specific patches that we can apply to the Fedora-packaged
-# stb libraries. These include patches for CVE-2021-42715 and CVE-2021-42716,
-# not yet merged upstream.
-#
-# It also ensures that a fix for CVE-2021-28021 (RHBZ#2015229) is present.
-Patch3:         https://github.com/PixarAnimationStudios/USD/commit/8f9bb9563980b41e7695148b63bf09f7abd38a41.patch
+# Fix compiling with -Werror=format-security
+# https://github.com/PixarAnimationStudios/USD/pull/1676
+Patch3:         1676.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -367,7 +360,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_ms.so.%{libmajor}
+%{_libdir}/lib%{name}_%{name}_ms.so.%{libmajor}
 %{_libdir}/%{name}
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
@@ -375,7 +368,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
 %{_libdir}/cmake/*
-%{_libdir}/lib%{name}_ms.so
+%{_libdir}/lib%{name}_%{name}_ms.so
 %{_libdir}/%{name}/%{name}/resources/codegenTemplates/
 
 %if %{with documentation}
