@@ -46,9 +46,6 @@ Source1:        org.open%{name}.%{name}view.desktop
 # https://github.com/PixarAnimationStudios/USD/issues/1387
 Patch1:         %{srcname}-20.05-soversion.patch
 
-# https://github.com/PixarAnimationStudios/USD/issues/1591
-Patch2:         USD-21.08-OpenEXR3.patch
-
 # Base
 BuildRequires:  boost-devel
 BuildRequires:  boost-program-options
@@ -89,11 +86,7 @@ BuildRequires:  pkgconfig(OpenColorIO) < 2
 BuildRequires:  pkgconfig(OpenImageIO)
 %endif
 BuildRequires:  cmake(OpenEXR)
-%if 0%{?fedora} < 35
 BuildRequires:  pkgconfig(IlmBase) >= 2.0
-%else
-BuildRequires:  cmake(Imath) >= 2.0
-%endif
 BuildRequires:  pkgconfig(Ptex)
 %endif
 %if %{with alembic}
@@ -244,10 +237,6 @@ chmod +x uic-wrapper
 # https://github.com/PixarAnimationStudios/USD/issues/1419
 
 flags="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
-# Patch2 was not good enough to get the include path for Imath everywhere it
-# was needed. Add it globally.
-# https://github.com/PixarAnimationStudios/USD/issues/1591
-flags="${flags} $(pkgconf --cflags Imath)"
 
 %cmake \
      -DCMAKE_CXX_FLAGS_RELEASE="${flags}" \
