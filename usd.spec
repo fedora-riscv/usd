@@ -10,13 +10,13 @@
 %bcond_without  jemalloc
 %bcond_with     openshading
 %bcond_with     openvdb
-%bcond_with     ocio
-%bcond_with     oiio
+%bcond_without  ocio
+%bcond_without  oiio
 %bcond_without  python3
 %bcond_with     test
 
 Name:           usd
-Version:        21.11
+Version:        22.03
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -48,10 +48,6 @@ Patch1:         %{srcname}-20.05-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
-
-# Fix compiling with -Werror=format-security
-# https://github.com/PixarAnimationStudios/USD/pull/1676
-Patch3:         1676.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -251,6 +247,9 @@ sed -i 's|plugin/usd|%{_libdir}/usd/plugin|g' \
 # Fix cmake directory destination
 sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
 
+# Disable depreciated glibc mallocHook
+# https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1003840684
+sed -i.bak  -e 's/.if !defined.ARCH_OS_WINDOWS./#if 0/' -e 's/.if defined.ARCH_COMPILER_GCC.*/#if 0/' -e 's/defined.ARCH_COMPILER_CLANG.//' -e 's/.if defined.ARCH_OS_LINUX./#if 0/' -e 's/.if !defined.ARCH_OS_LINUX./#if 1/' pxr/base/arch/mallocHook.cpp
 
 %build
 # Fix uic-qt5 use
