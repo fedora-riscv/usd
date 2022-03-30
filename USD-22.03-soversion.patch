@@ -1,0 +1,35 @@
+diff -Naur USD-22.03-original/cmake/defaults/Version.cmake USD-22.03/cmake/defaults/Version.cmake
+--- USD-22.03-original/cmake/defaults/Version.cmake	2022-02-18 16:49:09.000000000 -0500
++++ USD-22.03/cmake/defaults/Version.cmake	2022-03-30 08:25:52.278316816 -0400
+@@ -27,3 +27,9 @@
+ set(PXR_PATCH_VERSION "3")
+ 
+ math(EXPR PXR_VERSION "${PXR_MAJOR_VERSION} * 10000 + ${PXR_MINOR_VERSION} * 100 + ${PXR_PATCH_VERSION}")
++
++set(PXR_DOWNSTREAM_SOVERSION "${PXR_MAJOR_VERSION}.${PXR_MINOR_VERSION}.${PXR_PATCH_VERSION}"
++    CACHE
++    STRING
++    "Downstream shared object version"
++)
+diff -Naur USD-22.03-original/cmake/macros/Private.cmake USD-22.03/cmake/macros/Private.cmake
+--- USD-22.03-original/cmake/macros/Private.cmake	2022-02-18 16:49:09.000000000 -0500
++++ USD-22.03/cmake/macros/Private.cmake	2022-03-30 08:25:52.279316828 -0400
+@@ -1285,6 +1285,7 @@
+             PREFIX "${args_PREFIX}"
+             SUFFIX "${args_SUFFIX}"
+             PUBLIC_HEADER "${args_PUBLIC_HEADERS}"
++            SOVERSION ${PXR_DOWNSTREAM_SOVERSION}
+     )
+ 
+     set(pythonEnabled "PXR_PYTHON_ENABLED=1")
+diff -Naur USD-22.03-original/cmake/macros/Public.cmake USD-22.03/cmake/macros/Public.cmake
+--- USD-22.03-original/cmake/macros/Public.cmake	2022-02-18 16:49:09.000000000 -0500
++++ USD-22.03/cmake/macros/Public.cmake	2022-03-30 08:25:52.279316828 -0400
+@@ -939,6 +939,7 @@
+                     FOLDER "${folder}"
+                     PREFIX "${PXR_LIB_PREFIX}"
+                     IMPORT_PREFIX "${PXR_LIB_PREFIX}"
++		    SOVERSION ${PXR_DOWNSTREAM_SOVERSION}
+             )
+             _get_install_dir("lib" libInstallPrefix)
+             install(

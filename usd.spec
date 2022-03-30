@@ -1,5 +1,10 @@
+# We hard-code the ABI version here, even though it can be derived from the
+# package version, as a reminder of the need to rebuild dependent packages on
+# every update. See additional notes near the downstream ABI versioning patch.
+# It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
+%global downstream_so_version 0.22.3
+
 %global         __cmake_in_source_build 0
-%global         libmajor 0
 %global         srcname  USD
 %bcond_without  alembic
 %bcond_with     documentation
@@ -43,8 +48,31 @@ URL:            http://www.openusd.org/
 Source0:        https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:        org.open%{name}.%{name}view.desktop
 
+# Upstream was asked about .so versioning and setting SONAME properly and
+# seemed unprepared to handle the request:
+# https://github.com/PixarAnimationStudios/USD/issues/1259#issuecomment-657120216
+#
+# A patch was offered:
 # https://github.com/PixarAnimationStudios/USD/issues/1387
-Patch1:         %{srcname}-20.05-soversion.patch
+# but it was not sufficient for the general case, since (1) it only handled the
+# monolithic build, and (2) it derived the .so version from PXR_MAJOR_VERSION,
+# which is *not* reliably bumped on API or ABI changes, and currently is still
+# zero.
+#
+# We will therefore probably need to keep doing downstream .so versioning for
+# the foreseeable future. Currently we are assuming that the ABI is likely to
+# change on every release (an appropriate assumption for a large C++ project
+# with no ABI stability policy), so we build the .so version from the project
+# version. Note that the “hidden” major version is zero, so this complies with
+# the “0.” prefix recommended in the packaging guidelines.
+#
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/#_downstream_so_name_versioning
+#
+# A known defect of this patch is that it causes the hdTiny.so example plugin
+# to be versioned as well, which is undesired. This is not a serious problem
+# because we do not want to package the built plugin anyway. (It should not be
+# built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
+Patch1:         %{srcname}-22.03-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
@@ -330,8 +358,9 @@ desktop-file-install                                    \
 --dir=%{buildroot}%{_datadir}/applications              \
 %{SOURCE1}
 
-# Remove arch-specific code in /usr/share
-find %{buildroot}%{_datadir}/%{name}/examples -name '*.so' -print -delete
+# Remove examples that were built and installed even though we set
+# -DPXR_BUILD_EXAMPLES=OFF.
+rm -vrf '%{buildroot}%{_datadir}/%{name}/examples'
 
 # Fix installation path for some files
 mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
@@ -346,9 +375,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files
 %doc NOTICE.txt README.md
 %{_bindir}/*
-%dir %{_datadir}/%{name}
-%dir %{_datadir}/%{name}/examples/
-%{_datadir}/%{name}/examples/*
 
 %if %{with python3}
 %files -n python3-%{name}
@@ -359,7 +385,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_%{name}_ms.so.%{libmajor}
+%{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version}
 %{_libdir}/%{name}
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
