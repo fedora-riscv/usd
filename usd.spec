@@ -6,9 +6,7 @@
 %bcond_with     documentation
 %bcond_without  embree
 %bcond_without  imaging
-# We must keep jemalloc enabled to work around
-# https://github.com/PixarAnimationStudios/USD/issues/1592.
-%bcond_without  jemalloc
+%bcond_with     jemalloc
 %bcond_with     openshading
 %bcond_with     openvdb
 %bcond_with     ocio
@@ -71,6 +69,12 @@ Patch2:         USD-21.08-OpenEXR3.patch
 # Fix compiling with -Werror=format-security
 # https://github.com/PixarAnimationStudios/USD/pull/1676
 Patch3:         1676.patch
+
+# USD uses deprecated malloc hooks removed in glibc 2.34
+# https://github.com/PixarAnimationStudios/USD/issues/1592
+# Based on:
+# https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1047152905
+Patch4:         USD-21.11-disable-malloc-hooks.patch
 
 # Base
 BuildRequires:  boost-devel
