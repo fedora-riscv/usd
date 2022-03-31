@@ -6,9 +6,7 @@
 %bcond_with     documentation
 %bcond_without  embree
 %bcond_without  imaging
-# We must keep jemalloc enabled to work around
-# https://github.com/PixarAnimationStudios/USD/issues/1592.
-%bcond_without  jemalloc
+%bcond_with     jemalloc
 %bcond_with     openshading
 %bcond_with     openvdb
 %bcond_without  ocio
@@ -67,6 +65,12 @@ Patch1:         %{srcname}-20.05-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
 Patch2:         USD-21.08-OpenEXR3.patch
+
+# USD uses deprecated malloc hooks removed in glibc 2.34
+# https://github.com/PixarAnimationStudios/USD/issues/1592
+# Based on:
+# https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1047152905
+Patch3:         USD-21.11-disable-malloc-hooks.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -265,10 +269,6 @@ sed -i 's|plugin/usd|%{_libdir}/usd/plugin|g' \
 
 # Fix cmake directory destination
 sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
-
-# Disable depreciated glibc mallocHook
-# https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1003840684
-sed -i.bak  -e 's/.if !defined.ARCH_OS_WINDOWS./#if 0/' -e 's/.if defined.ARCH_COMPILER_GCC.*/#if 0/' -e 's/defined.ARCH_COMPILER_CLANG.//' -e 's/.if defined.ARCH_OS_LINUX./#if 0/' -e 's/.if !defined.ARCH_OS_LINUX./#if 1/' pxr/base/arch/mallocHook.cpp
 
 %build
 # Fix uic-qt5 use
