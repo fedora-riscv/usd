@@ -1,6 +1,5 @@
 %global downstream_so_version 0
 
-%global         __cmake_in_source_build 0
 %global         srcname  USD
 %bcond_without  alembic
 %bcond_with     documentation
