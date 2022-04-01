@@ -4,7 +4,6 @@
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
 %global downstream_so_version 0.22.3
 
-%global         __cmake_in_source_build 0
 %global         srcname  USD
 %bcond_without  alembic
 %bcond_with     documentation
