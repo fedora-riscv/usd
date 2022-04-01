@@ -120,6 +120,18 @@ Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
 %endif
 
+# This package is only available for x86_64 and aarch64
+# Will fail to build on other architectures
+# https://bugzilla.redhat.com/show_bug.cgi?id=1960848
+ExclusiveArch:  aarch64 x86_64
+
+%description
+Universal Scene Description (USD) is a time-sampled scene
+description for interchange between graphics applications.
+
+%package        libs
+Summary:        Universal Scene Description library
+
 # Upstream bundles
 # Filed ticket to convince upstream to use system libraries
 # https://github.com/PixarAnimationStudios/USD/issues/1490
@@ -140,19 +152,6 @@ Provides:       bundled(rapidjson) = 1.0.2
 Provides:       bundled(SPIRV-Reflect) = 1.0
 # Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
-
-# This package is only available for x86_64 and aarch64
-# Will fail to build on other architectures
-# https://bugzilla.redhat.com/show_bug.cgi?id=1960848
-ExclusiveArch:  aarch64 x86_64
-
-%description
-Universal Scene Description (USD) is a time-sampled scene
-description for interchange between graphics applications.
-
-%package        libs
-Summary:        Universal Scene Description library
-
 
 %description libs
 Universal Scene Description (USD) is an efficient, scalable system for
