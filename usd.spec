@@ -363,6 +363,14 @@ mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
 mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
         %{buildroot}%{python3_sitearch}/pxr/Usdviewq/
 
+# Currently, the pxrConfig.cmake that is installed is not correct for
+# monolithic builds (and we must do a monolithic build in order to be usable as
+# a dependency for Blender). It relies on the libraries that would be in
+# pxrTargets.cmake, which is not generated for monolithic builds.
+# https://bugzilla.redhat.com/show_bug.cgi?id=2055414
+# https://github.com/PixarAnimationStudios/USD/issues/1088
+rm -vrf '%{buildroot}%{_libdir}/cmake'
+
 %check
 desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{?with_test:%ctest}
@@ -387,7 +395,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files devel
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
-%{_libdir}/cmake/*
 %{_libdir}/lib%{name}_%{name}_ms.so
 %{_libdir}/%{name}/%{name}/resources/codegenTemplates/
 
