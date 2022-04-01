@@ -11,7 +11,10 @@
 %bcond_with     ocio
 %bcond_with     oiio
 %bcond_without  python3
-%bcond_with     test
+# TODO: Figure out how to re-enable the tests. Currently these want to install
+# into /usr/tests and, and there are issues with the launchers finding the
+# command-line tools in the buildroot.
+%bcond_with  test
 
 Name:           usd
 Version:        21.11
@@ -74,6 +77,9 @@ Patch3:         1676.patch
 # Based on:
 # https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1047152905
 Patch4:         USD-21.11-disable-malloc-hooks.patch
+
+# Backport upstream commit 04dd025 “Fix compilation on GCC11.”
+Patch5:         https://github.com/PixarAnimationStudios/USD/commit/04dd02515d1ee05e26629ba540afc53986ae60e0.patch
 
 # Base
 BuildRequires:  boost-devel
