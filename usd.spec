@@ -1,5 +1,6 @@
+%global downstream_so_version 0
+
 %global         __cmake_in_source_build 0
-%global         libmajor 0
 %global         srcname  USD
 %bcond_without  alembic
 %bcond_with     documentation
@@ -43,7 +44,25 @@ URL:            http://www.openusd.org/
 Source0:        https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:        org.open%{name}.%{name}view.desktop
 
+# Upstream was asked about .so versioning and setting SONAME properly and
+# seemed unprepared to handle the request:
+# https://github.com/PixarAnimationStudios/USD/issues/1259#issuecomment-657120216
+#
+# A patch was offered:
 # https://github.com/PixarAnimationStudios/USD/issues/1387
+# but it was not sufficient for the general case, since (1) it only handled the
+# monolithic build, and (2) it derived the .so version from PXR_MAJOR_VERSION,
+# which is *not* reliably bumped on API or ABI changes, and currently is still
+# zero.
+#
+# We will therefore probably need to keep doing downstream .so versioning for
+# the foreseeable future. A new scheme is implemented in F37 and later that
+# assumes that the ABI is likely to change on every release (an appropriate
+# assumption for a large C++ project with no ABI stability policy), and
+# therefore builds the .so version from the project version.
+#
+# In F36 and older, we keep the old .so version scheme to avoid a breaking
+# change.
 Patch1:         %{srcname}-20.05-soversion.patch
 
 # https://github.com/PixarAnimationStudios/USD/issues/1591
@@ -330,8 +349,9 @@ desktop-file-install                                    \
 --dir=%{buildroot}%{_datadir}/applications              \
 %{SOURCE1}
 
-# Remove arch-specific code in /usr/share
-find %{buildroot}%{_datadir}/%{name}/examples -name '*.so' -print -delete
+# Remove examples that were built and installed even though we set
+# -DPXR_BUILD_EXAMPLES=OFF.
+rm -vrf '%{buildroot}%{_datadir}/%{name}/examples'
 
 # Fix installation path for some files
 mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
@@ -346,9 +366,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files
 %doc NOTICE.txt README.md
 %{_bindir}/*
-%dir %{_datadir}/%{name}
-%dir %{_datadir}/%{name}/examples/
-%{_datadir}/%{name}/examples/*
 
 %if %{with python3}
 %files -n python3-%{name}
@@ -359,7 +376,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_%{name}_ms.so.%{libmajor}
+%{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version}
 %{_libdir}/%{name}
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
