@@ -106,9 +106,10 @@ BuildRequires:  hdf5-devel
 %endif
 
 # Header-only library: -static is for tracking per guidelines
-# stb_image 2.27-0.7 is the minimum EVR to contain fixes for all of
-# CVE-2021-28021, CVE-2021-42715, and CVE-2021-42716.
-BuildRequires:  stb_image-devel >= 2.27-0.7
+#
+# stb_image 2.27^20210910gitaf1a5bc-0.2 is the minimum EVR to contain fixes for
+# all of CVE-2021-28021, CVE-2021-42715, CVE-2021-42716, and CVE-2022-28041.
+BuildRequires:  stb_image-devel >= 2.27^20210910gitaf1a5bc-0.2
 BuildRequires:  stb_image-static
 BuildRequires:  stb_image_write-devel
 BuildRequires:  stb_image_write-static
