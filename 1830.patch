@@ -1,0 +1,189 @@
+From 566da79a23d9c182e6fcc463efcc2cc585dde08b Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Charles=20Fl=C3=A8che?= <charles.fleche@free.fr>
+Date: Sun, 10 Apr 2022 12:08:30 -0400
+Subject: [PATCH] Add PXR_ENABLE_MALLOCHOOK_SUPPORT build option
+
+---
+ BUILDING.md                  |  9 ++++++++-
+ build_scripts/build_usd.py   | 18 ++++++++++++++++++
+ cmake/defaults/Options.cmake |  1 +
+ pxr/base/arch/CMakeLists.txt |  5 +++++
+ pxr/base/arch/mallocHook.cpp | 17 +++++++++++------
+ 5 files changed, 43 insertions(+), 7 deletions(-)
+
+diff --git a/BUILDING.md b/BUILDING.md
+index d62efeb53b..16c22917ce 100644
+--- a/BUILDING.md
++++ b/BUILDING.md
+@@ -413,7 +413,7 @@ There are certain optimizations that can be enabled in the build.
+ ##### Malloc Library
+ 
+ We've found that USD performs best with allocators such as [Jemalloc](https://github.com/jemalloc/jemalloc).
+-In support of this, you can specify your own allocator through ```PXR_MALLOC_LIBRARY```.
++In support of this, for Linux systems you can specify your own allocator through ```PXR_MALLOC_LIBRARY```.
+ This variable should be set to a path to a shared object for the allocator. For example,
+ 
+ ```bash
+@@ -423,6 +423,13 @@ This variable should be set to a path to a shared object for the allocator. For
+ If none are specified, the default allocator will be used. More information on getting the most out of
+ USD can be found [Getting the Best Performance with USD](http://openusd.org/docs/Maximizing-USD-Performance.html).
+ 
++However glibc 2.34 removed the deprecated memory allocation hooks, preventing USD to correctly build. Custom memory
++allocation code can be compiled out with the ```PXR_ENABLE_MALLOCHOOK_SUPPORT``` option.
++
++```bash
++-DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF
++```
++
+ ## Linker Options
+ 
+ There are four ways to link USD controlled by the following options:
+diff --git a/build_scripts/build_usd.py b/build_scripts/build_usd.py
+index b00449266f..d45ade2152 100644
+--- a/build_scripts/build_usd.py
++++ b/build_scripts/build_usd.py
+@@ -351,6 +351,10 @@ def AppendCXX11ABIArg(buildFlag, context, buildArgs):
+     buildArgs.append('{flag}="{flags}"'.format(
+         flag=buildFlag, flags=" ".join(cxxFlags)))
+ 
++def AppendEnableMallocHookArg(buildFlag, context, buildArgs):
++    if context.enableMallocHook is None:
++        return
++
+ def FormatMultiProcs(numJobs, generator):
+     tag = "-j"
+     if generator:
+@@ -1559,6 +1563,10 @@ def InstallUSD(context, force, buildArgs):
+         else:
+             extraArgs.append('-DPXR_ENABLE_MATERIALX_SUPPORT=OFF')
+ 
++        if context.enableMallocHook is not None:
++            support = 'ON' if context.enableMallocHook else 'OFF'
++            extraArgs.append('-DPXR_ENABLE_MALLOCHOOK_SUPPORT={}'.format(support))
++
+         if Windows():
+             # Increase the precompiled header buffer limit.
+             extraArgs.append('-DCMAKE_CXX_FLAGS="/Zm150"')
+@@ -1696,6 +1704,8 @@ def InstallUSD(context, force, buildArgs):
+ if Linux():
+     group.add_argument("--use-cxx11-abi", type=int, choices=[0, 1],
+                        help=("Use C++11 ABI for libstdc++. (see docs above)"))
++    group.add_argument("--enable-malloc-hook", type=int, choices=[0, 1],
++                       help=("Enable specifying memory allocators on Linux with PXR_MALLOC_LIBRARY"))
+ 
+ group = parser.add_argument_group(title="3rd Party Dependency Build Options")
+ group.add_argument("--src", type=str,
+@@ -1941,6 +1951,8 @@ def __init__(self, args):
+         # Build options
+         self.useCXX11ABI = \
+             (args.use_cxx11_abi if hasattr(args, "use_cxx11_abi") else None)
++        self.enableMallocHook = \
++            (args.enable_malloc_hook if hasattr(args, "enable_malloc_hook") else None)
+         self.safetyFirst = args.safety_first
+ 
+         # Dependencies that are forced to be built
+@@ -2193,6 +2205,11 @@ def _JoinVersion(v):
+     Use C++11 ABI               {useCXX11ABI}
+ """
+ 
++if context.enableMallocHook is not None:
++    summaryMsg += """\
++    Enable malloc hook          {enableMallocHook}
++"""
++
+ summaryMsg += """\
+     Variant                     {buildVariant}
+     Imaging                     {buildImaging}
+@@ -2247,6 +2264,7 @@ def FormatBuildArguments(buildArgs):
+                   ", ".join([d.name for d in dependenciesToBuild])),
+     buildArgs=FormatBuildArguments(context.buildArgs),
+     useCXX11ABI=("On" if context.useCXX11ABI else "Off"),
++    enableMallocHook=("On" if context.enableMallocHook else "Off"),
+     buildType=("Shared libraries" if context.buildShared
+                else "Monolithic shared library" if context.buildMonolithic
+                else ""),
+diff --git a/cmake/defaults/Options.cmake b/cmake/defaults/Options.cmake
+index f6a8fd8741..fc7b344d36 100644
+--- a/cmake/defaults/Options.cmake
++++ b/cmake/defaults/Options.cmake
+@@ -51,6 +51,7 @@ option(PXR_PREFER_SAFETY_OVER_SPEED
+        "Enable certain checks designed to avoid crashes or out-of-bounds memory reads with malformed input files.  These checks may negatively impact performance."
+         ON)
+ option(PXR_USE_AR_2 "Use Asset Resolver (Ar) 2.0" ON)
++option(PXR_ENABLE_MALLOCHOOK_SUPPORT "Enable Arch malloc hooks" ON)
+ 
+ # Determine GFX api
+ # Metal only valid on Apple platforms
+diff --git a/pxr/base/arch/CMakeLists.txt b/pxr/base/arch/CMakeLists.txt
+index 97be26e83c..ca24bc767e 100644
+--- a/pxr/base/arch/CMakeLists.txt
++++ b/pxr/base/arch/CMakeLists.txt
+@@ -59,6 +59,11 @@ pxr_library(arch
+     DOXYGEN_FILES
+         overview.dox
+ )
++if (PXR_ENABLE_MALLOCHOOK_SUPPORT)
++    target_compile_definitions(arch
++        PRIVATE target_compile_definition ARCH_MALLOC_HOOK
++    )
++endif()
+ 
+ pxr_build_test_shared_lib(testArchAbiPlugin
+     CPPFILES
+diff --git a/pxr/base/arch/mallocHook.cpp b/pxr/base/arch/mallocHook.cpp
+index b68a31afb3..338263388f 100644
+--- a/pxr/base/arch/mallocHook.cpp
++++ b/pxr/base/arch/mallocHook.cpp
+@@ -28,7 +28,7 @@
+ #include "pxr/base/arch/defines.h"
+ #include "pxr/base/arch/env.h"
+ 
+-#if !defined(ARCH_OS_WINDOWS)
++#if defined(ARCH_MALLOC_HOOK) && !defined(ARCH_OS_WINDOWS)
+ #   include <dlfcn.h>
+ #endif
+ #include <cstring>
+@@ -88,7 +88,7 @@ static bool
+ _MallocProvidedBySameLibraryAs(const char* functionName,
+                                bool skipMallocCheck)
+ {
+-#if !defined(ARCH_OS_WINDOWS)
++#if defined(ARCH_MALLOC_HOOK) && !defined(ARCH_OS_WINDOWS)
+     const void* function = dlsym(RTLD_DEFAULT, functionName);
+     if (!function) {
+         return false;
+@@ -151,8 +151,9 @@ ArchIsJemallocActive()
+ bool
+ ArchIsStlAllocatorOff()
+ {
+-#if defined(ARCH_COMPILER_GCC) || defined(ARCH_COMPILER_ICC) || \
+-    defined(ARCH_COMPILER_CLANG)
++#if defined(ARCH_MALLOC_HOOK) && \
++    (defined(ARCH_COMPILER_GCC) || defined(ARCH_COMPILER_ICC) || \
++    defined(ARCH_COMPILER_CLANG))
+     // I'm assuming that ICC compiles will use the gcc STL library.
+ 
+     /*
+@@ -177,7 +178,7 @@ ArchMallocHook::IsInitialized()
+        _underlyingMemalignFunc || _underlyingFreeFunc;
+ }
+ 
+-#if defined(ARCH_OS_LINUX)
++#if defined(ARCH_MALLOC_HOOK) && defined(ARCH_OS_LINUX)
+ template <typename T>
+ static bool _GetSymbol(T* addr, const char* name, string* errMsg) {
+     if (void* symbol = dlsym(RTLD_DEFAULT, name)) {
+@@ -241,8 +242,12 @@ ArchMallocHook::Initialize(
+     ARCH_UNUSED_ARG void  (*freeWrapper)(void*, const void*),
+     string* errMsg)
+ {
+-#if !defined(ARCH_OS_LINUX)
++#if !defined(ARCH_MALLOC_HOOK) || !defined(ARCH_OS_LINUX)
++    #if !defined(ARCH_MALLOC_HOOK)
++    *errMsg = "ArchMallocHook functionality deactivated at build time";
++    #else
+     *errMsg = "ArchMallocHook functionality not implemented for non-linux systems";
++    #endif
+     return false;
+ #else
+     if (IsInitialized()) {

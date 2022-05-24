@@ -2,9 +2,8 @@
 # package version, as a reminder of the need to rebuild dependent packages on
 # every update. See additional notes near the downstream ABI versioning patch.
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
-%global downstream_so_version 0.22.3
+%global downstream_so_version 0.22.5
 
-%global         srcname  USD
 %bcond_without  alembic
 %bcond_with     documentation
 %bcond_without  embree
@@ -21,7 +20,7 @@
 %bcond_with  test
 
 Name:           usd
-Version:        22.03
+Version:        22.05a
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -35,17 +34,26 @@ Summary:        3D VFX pipeline interchange file format
 # MIT:
 #   - pxr/imaging/garch/khrplatform.h
 #   - pxr/base/js/rapidjson/, except pxr/base/js/rapidjson/msinttypes/
-#   - pxr/base/tf/pyLock.cpp (only some sections; most of the file is
-#     ASL 2.0)
-#   - third_party/renderman-23/plugin/rmanArgsParser/pugixml/
+#   - third_party/renderman-24/plugin/rmanArgsParser/pugixml/
+#   - pxr/base/tf/pxrTslRobinMap/
+#   - pxr/imaging/hgiVulkan/vk_mem_alloc.h
 # MIT or Unlicense:
 #   - pxr/imaging/hio/stb/
 #
 # (Certain build system files are also under licenses other than ASL 2.0, but
 # do not contribute their license terms to the built RPMs.)
+#
+# The following files mention GPLv3+, but are distributed under ASL 2.0 due to
+# the special exception for Bison parser skeletons. See the comments in their
+# headers for details.
+#
+#   - pxr/usd/sdf/path.tab.{cpp,h}
+#   - pxr/usd/sdf/textFileFormat.tab.{cpp,h}
+#   - third_party/renderman-24/plugin/hdPrman/virtualStructConditionalGrammar.tab.{cpp,h}
 License:        ASL 2.0 and BSD and MIT and (MIT or Unlicense)
 URL:            http://www.openusd.org/
-Source0:        https://github.com/PixarAnimationStudios/%{name}/archive/v%{version}/%{name}-%{version}.tar.gz
+%global forgeurl https://github.com/PixarAnimationStudios/%{name}
+Source0:        %{forgeurl}/archive/v%{version}/%{name}-%{version}.tar.gz
 Source1:        org.open%{name}.%{name}view.desktop
 
 # Upstream was asked about .so versioning and setting SONAME properly and
@@ -72,19 +80,21 @@ Source1:        org.open%{name}.%{name}view.desktop
 # to be versioned as well, which is undesired. This is not a serious problem
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
-Patch1:         %{srcname}-22.03-soversion.patch
+Patch:          USD-22.05-soversion.patch
 
+# Support OpenEXR 3
 # https://github.com/PixarAnimationStudios/USD/issues/1591
-Patch2:         USD-21.08-OpenEXR3.patch
+#
+# See also:
+# Support compiling against imath
+# https://github.com/PixarAnimationStudios/USD/pull/1829
+# Support OpenVDB without depending on OpenEXR
+# https://github.com/PixarAnimationStudios/USD/pull/1728
+Patch2:         USD-22.05-OpenEXR3.patch
 
-# USD uses deprecated malloc hooks removed in glibc 2.34
-# https://github.com/PixarAnimationStudios/USD/issues/1592
-# Based on:
-# https://github.com/PixarAnimationStudios/USD/issues/1592#issuecomment-1047152905
-Patch3:         USD-21.11-disable-malloc-hooks.patch
-
-# Backport upstream commit 04dd025 “Fix compilation on GCC11.”
-Patch4:         https://github.com/PixarAnimationStudios/USD/commit/04dd02515d1ee05e26629ba540afc53986ae60e0.patch
+# Allow building against recent glibc with no malloc hooks (>= 2.34)
+# https://github.com/PixarAnimationStudios/USD/pull/1830
+Patch:          %{forgeurl}/pull/1830.patch
 
 # Base
 BuildRequires:  boost-devel
@@ -157,6 +167,9 @@ Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
 # https://bugzilla.redhat.com/show_bug.cgi?id=1960848
+#
+# Note that pxr/base/arch/assumptions.cpp explicitly tests the machine is not
+# big-endian, and pxr/base/arch/defines.h explicitly enforces x86_64 or ARM64.
 ExclusiveArch:  aarch64 x86_64
 
 %description
@@ -186,6 +199,9 @@ Provides:       bundled(rapidjson) = 1.0.2
 Provides:       bundled(SPIRV-Reflect) = 1.0
 # Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
 Provides:       bundled(VulkanMemoryAllocator) = 3.0.0~development
+# Forked from an unknown version:
+# pxr/base/tf/pxrTslRobinMap/
+Provides:       bundled(robin-map)
 
 %description libs
 Universal Scene Description (USD) is an efficient, scalable system for
@@ -236,7 +252,7 @@ Documentation for the Universal Scene Description (USD) C++ API
 %endif
 
 %prep
-%autosetup -p1 -n %{srcname}-%{version}
+%autosetup -p1 -n USD-%{version}
 
 # Convert NOTICE.txt from CRNL line encoding
 dos2unix NOTICE.txt
@@ -348,7 +364,8 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %else
      -DPXR_ENABLE_PYTHON_SUPPORT=OFF \
 %endif
-     -DPXR_BUILD_MONOLITHIC=ON
+     -DPXR_BUILD_MONOLITHIC=ON \
+     -DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF
 %cmake_build
 
 %install
@@ -387,12 +404,28 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 
 %files
 %doc NOTICE.txt README.md
-%{_bindir}/*
+%{_bindir}/sdfdump
+%{_bindir}/sdffilter
+%{_bindir}/usdGenSchema
+%{_bindir}/usdcat
+%{_bindir}/usdchecker
+%{_bindir}/usddiff
+%{_bindir}/usddumpcrate
+%{_bindir}/usdedit
+%{_bindir}/usdgenschemafromsdr
+%{_bindir}/usdrecord
+%{_bindir}/usdresolve
+%{_bindir}/usdstitch
+%{_bindir}/usdstitchclips
+%{_bindir}/usdtree
+%{_bindir}/usdzip
 
 %if %{with python3}
 %files -n python3-%{name}
-%{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{python3_sitearch}/pxr
+%{_datadir}/applications/org.open%{name}.%{name}view.desktop
+%{_bindir}/testusdview
+%{_bindir}/usdview
 %endif
 
 %files libs
