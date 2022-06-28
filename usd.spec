@@ -14,6 +14,9 @@
 %bcond_without  ocio
 %bcond_without  oiio
 %bcond_without  python3
+# python-pyside2 fails to build with Python 3.11: error: expression is not assignable
+# https://bugzilla.redhat.com/show_bug.cgi?id=2025599
+%bcond_with     usdview
 # TODO: Figure out how to re-enable the tests. Currently these want to install
 # into /usr/tests and, and there are issues with the launchers finding the
 # command-line tools in the buildroot.
@@ -230,18 +233,22 @@ you will need to install %{name}-devel.
 %package -n python3-%{name}
 Summary: %{summary}
 
-BuildRequires:  desktop-file-utils
 BuildRequires:  pkgconfig(python3)
 BuildRequires:  pkgconfig(Qt5)
 BuildRequires:  python3dist(jinja2)
+%if %{with usdview}
+BuildRequires:  desktop-file-utils
 BuildRequires:  python3dist(pyside2)
+%endif
 BuildRequires:  python3dist(pyopengl)
 Requires:       font(roboto)
 Requires:       font(robotoblack)
 Requires:       font(robotolight)
 Requires:       font(robotomono)
 Requires:       python3dist(jinja2)
+%if %{with usdview}
 Requires:       python3dist(pyside2)
+%endif
 Requires:       python3dist(pyopengl)
 %py_provides    python3-pxr
 
@@ -332,7 +339,7 @@ flags="${flags} $(pkgconf --cflags Imath)"
      -DCMAKE_SKIP_RPATH=ON \
      -DCMAKE_SKIP_INSTALL_RPATH=ON \
      -DCMAKE_VERBOSE_MAKEFILE=ON \
-     -DPXR_BUILD_USDVIEW=ON \
+     -DPXR_BUILD_USDVIEW=%{?with_usdview:ON}%{?!with_usdview:OFF} \
 %if %{with documentation}
      -DPXR_BUILD_DOCUMENTATION=TRUE \
 %endif
@@ -382,10 +389,12 @@ flags="${flags} $(pkgconf --cflags Imath)"
 mkdir -p %{buildroot}%{python3_sitearch}
 mv %{buildroot}%{python3_sitelib}/* %{buildroot}%{python3_sitearch}
 
+%if %{with usdview}
 # Install a desktop icon for usdview
 desktop-file-install                                    \
 --dir=%{buildroot}%{_datadir}/applications              \
 %{SOURCE1}
+%endif
 
 # Remove examples that were built and installed even though we set
 # -DPXR_BUILD_EXAMPLES=OFF.
@@ -394,8 +403,10 @@ rm -vrf '%{buildroot}%{_datadir}/%{name}/examples'
 # Fix installation path for some files
 mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
         %{buildroot}%{python3_sitearch}/pxr/
+%if %{with usdview}
 mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
         %{buildroot}%{python3_sitearch}/pxr/Usdviewq/
+%endif
 
 # Currently, the pxrConfig.cmake that is installed is not correct for
 # monolithic builds (and we must do a monolithic build in order to be usable as
@@ -406,7 +417,9 @@ mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
 rm -vrf '%{buildroot}%{_libdir}/cmake'
 
 %check
+%if %{with usdview}
 desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{name}view.desktop
+%endif
 %{?with_test:%ctest}
 
 %files
@@ -430,9 +443,11 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/pxr
+%if %{with usdview}
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
 %{_bindir}/usdview
+%endif
 %endif
 
 %files libs
