@@ -1,4 +1,4 @@
-From 58671d78c493169ae9123ce536f0b1ed47fcdcd2 Mon Sep 17 00:00:00 2001
+From 899e6456986d42629a1ca5f2a01d07bca261207b Mon Sep 17 00:00:00 2001
 From: "Benjamin A. Beasley" <code@musicinmybrain.net>
 Date: Mon, 27 Jun 2022 11:50:04 -0400
 Subject: [PATCH] Do not access PyFrameObject fields directly on Python 3.10+
@@ -10,7 +10,7 @@ directly.
  1 file changed, 18 insertions(+), 4 deletions(-)
 
 diff --git a/pxr/base/tf/pyTracing.cpp b/pxr/base/tf/pyTracing.cpp
-index 62262d7d75..06d08f4e6d 100644
+index 62262d7d75..300c30a435 100644
 --- a/pxr/base/tf/pyTracing.cpp
 +++ b/pxr/base/tf/pyTracing.cpp
 @@ -35,8 +35,9 @@
@@ -37,7 +37,7 @@ index 62262d7d75..06d08f4e6d 100644
 +    PyCodeObject * code = frame->f_code;
 +    // Create a strong reference as PyFrame_GetCode() would, so we do not have
 +    // to conditionalize decrementing the reference count.
-+    (void) Py_NewRef((PyObject *) code);
++    Py_INCREF((PyObject *)code);
 +#endif
      info.arg = arg;
 -    info.funcName = TfPyString_AsString(frame->f_code->co_name);
@@ -48,7 +48,7 @@ index 62262d7d75..06d08f4e6d 100644
 +    info.funcLine = code->co_firstlineno;
      info.what = what;
 +    // PyFrame_GetCode returned a strong reference
-+    Py_DECREF((PyObject *) code);
++    Py_DECREF((PyObject *)code);
  
      _InvokeTraceFns(info);
  
