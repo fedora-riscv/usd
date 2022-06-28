@@ -90,11 +90,18 @@ Patch:          USD-22.05-soversion.patch
 # https://github.com/PixarAnimationStudios/USD/pull/1829
 # Support OpenVDB without depending on OpenEXR
 # https://github.com/PixarAnimationStudios/USD/pull/1728
-Patch2:         USD-22.05-OpenEXR3.patch
+Patch:          USD-22.05-OpenEXR3.patch
 
 # Allow building against recent glibc with no malloc hooks (>= 2.34)
 # https://github.com/PixarAnimationStudios/USD/pull/1830
 Patch:          %{forgeurl}/pull/1830.patch
+
+# Do not access PyFrameObject fields directly on Python 3.10+
+#
+# Fixes a Python 3.11 incompatibility. Still accesses PyCodeObject fields
+# directly.
+# https://github.com/PixarAnimationStudios/USD/pull/1928
+Patch:          %{forgeurl}/pull/1928.patch
 
 # Base
 BuildRequires:  boost-devel
