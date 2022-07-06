@@ -14,9 +14,7 @@
 %bcond_without  ocio
 %bcond_without  oiio
 %bcond_without  python3
-# python-pyside2 fails to build with Python 3.11: error: expression is not assignable
-# https://bugzilla.redhat.com/show_bug.cgi?id=2025599
-%bcond_with     usdview
+%bcond_without  usdview
 # TODO: Figure out how to re-enable the tests. Currently these want to install
 # into /usr/tests and, and there are issues with the launchers finding the
 # command-line tools in the buildroot.
