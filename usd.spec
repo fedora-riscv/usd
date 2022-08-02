@@ -2,7 +2,7 @@
 # package version, as a reminder of the need to rebuild dependent packages on
 # every update. See additional notes near the downstream ABI versioning patch.
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
-%global downstream_so_version 0.22.5
+%global downstream_so_version 0.22.8
 
 %bcond_without  alembic
 %bcond_with     documentation
@@ -14,6 +14,9 @@
 %bcond_without  ocio
 %bcond_without  oiio
 %bcond_without  python3
+# Review Request: python-pyqt6 - PyQt6 is Python bindings for Qt6
+# https://bugzilla.redhat.com/bugzilla/show_bug.cgi?id=2074709
+%bcond_with     pyside6
 %bcond_without  usdview
 # TODO: Figure out how to re-enable the tests. Currently these want to install
 # into /usr/tests and, and there are issues with the launchers finding the
@@ -21,7 +24,7 @@
 %bcond_with  test
 
 Name:           usd
-Version:        22.05b
+Version:        22.08
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -81,7 +84,7 @@ Source1:        org.open%{name}.%{name}view.desktop
 # to be versioned as well, which is undesired. This is not a serious problem
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
-Patch:          USD-22.05-soversion.patch
+Patch:          USD-22.08-soversion.patch
 
 # Support OpenEXR 3
 # https://github.com/PixarAnimationStudios/USD/issues/1591
@@ -91,11 +94,7 @@ Patch:          USD-22.05-soversion.patch
 # https://github.com/PixarAnimationStudios/USD/pull/1829
 # Support OpenVDB without depending on OpenEXR
 # https://github.com/PixarAnimationStudios/USD/pull/1728
-Patch:          USD-22.05-OpenEXR3.patch
-
-# Allow building against recent glibc with no malloc hooks (>= 2.34)
-# https://github.com/PixarAnimationStudios/USD/pull/1830
-Patch:          %{forgeurl}/pull/1830.patch
+Patch:          USD-22.08-OpenEXR3.patch
 
 # Do not access PyFrameObject fields directly on Python 3.10+
 #
@@ -236,7 +235,11 @@ BuildRequires:  pkgconfig(Qt5)
 BuildRequires:  python3dist(jinja2)
 %if %{with usdview}
 BuildRequires:  desktop-file-utils
+%if %{with pyside6}
+BuildRequires:  python3dist(pyside6)
+%else
 BuildRequires:  python3dist(pyside2)
+%endif
 %endif
 BuildRequires:  python3dist(pyopengl)
 Requires:       font(roboto)
@@ -245,7 +248,11 @@ Requires:       font(robotolight)
 Requires:       font(robotomono)
 Requires:       python3dist(jinja2)
 %if %{with usdview}
+%if %{with pyside6}
+Requires:       python3dist(pyside6)
+%else
 Requires:       python3dist(pyside2)
+%endif
 %endif
 Requires:       python3dist(pyopengl)
 %py_provides    python3-pxr
@@ -451,14 +458,14 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version}
+%{_libdir}/lib%{name}_ms.so.%{downstream_so_version}
 %{_libdir}/%{name}
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
 %files devel
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
-%{_libdir}/lib%{name}_%{name}_ms.so
+%{_libdir}/lib%{name}_ms.so
 %{_libdir}/%{name}/%{name}/resources/codegenTemplates/
 
 %if %{with documentation}
