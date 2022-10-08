@@ -1,0 +1,92 @@
+* Sat Oct 08 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-11
+- Fix rpmautospec changelog problems
+
+* Fri Oct 07 2022 Richard Shaw <hobbes1069@gmail.com> 22.05b-10
+- Rebuild for OpenImageIO 2.4.4.2.
+
+* Wed Aug 03 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-9
+- Revert "Update to 22.08 (.so version bump); close RHBZ#2110024"
+
+* Tue Aug 02 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.08-1
+- Update to 22.08 (.so version bump); close RHBZ#2110024
+- The monolithic library is also renamed from libusd_usd_ms.so to
+  libusd_ms.so.
+
+* Sat Jul 23 2022 Fedora Release Engineering <releng@fedoraproject.org> 22.05b-8
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_37_Mass_Rebuild
+
+* Wed Jul 06 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-7
+- Re-enable usdview now that RHBZ#2025599 is fixed
+
+* Mon Jul 04 2022 Luya Tshimbalanga <luya@fedoraproject.org> 22.05b-6
+- Rebuild for embree 3.13.3
+
+* Thu Jun 30 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-5
+- Updated (cleaner) patch in upstream PR#1928
+
+* Tue Jun 28 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-4
+- Updated patch for upstream PR#1928
+
+* Tue Jun 28 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-3
+- Temporarily disable usdview (close RHBZ#2099184)
+- It can be re-enabled when pyside2 is ready for Python 3.11 (RHBZ#2025599)
+
+* Tue Jun 28 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-2
+- Fix a Python 3.11 incompatibility
+- Apply upstream PR#1928 “Do not access PyFrameObject fields directly on
+  Python 3.10+”
+
+* Wed Jun 15 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05b-1
+- Update to 22.05b (close RHBZ#2097211)
+
+* Fri May 27 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.05a-1
+- Update to 22.05a (close RHBZ#2078041)
+- For working around deprecated/removed glibc malloc hooks, switch to
+  upstream PR#1830, which has similar effect to our pre-existing patch, but
+  is a little tidier
+- Move usdview/testusdview binaries to python3-usd subpackage
+- New downstream .so version 0.22.5
+
+* Wed May 04 2022 Thomas Rodgers <trodgers@redhat.com> 22.03-9
+- Rebuilt for Boost 1.78
+
+* Wed Apr 20 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-8
+- Security fix for CVE-2022-28041
+
+* Fri Apr 01 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-7
+- Do not package pxrConfig.cmake (close RHBZ#2055414)
+
+* Fri Apr 01 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-6
+- Apply a patch that would be required to build the tests
+
+* Fri Apr 01 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-5
+- Move bundled library virtual Provides to -libs
+
+* Fri Apr 01 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-4
+- No need to explicitly disable in-source build on Fedora
+
+* Fri Apr 01 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-3
+- Stop using jemalloc
+
+* Wed Mar 30 2022 Benjamin A. Beasley <code@musicinmybrain.net> 22.03-2
+- Change downstream .so version scheme
+- Use the entire version number in the .so version to reflect the lack of
+  an upstream ABI stability policy.
+- Use a separate .so version macro in the spec file rather than deducing it
+  from the package version. Having to manually change the .so version macro
+  on updates is a valuable reminder of the need to rebuild dependent
+  packages.
+- Also support versioning shared libraries in non-monolithic builds.
+
+* Mon Feb 21 2022 Luya Tshimbalanga <luya@fedoraproject.org> 22.03-1
+- New upstream release 22.03 This update adds workaround removing
+  depreciated glibc mallocHock
+
+* Sat Jan 22 2022 Fedora Release Engineering <releng@fedoraproject.org> 21.11-5
+- Rebuilt for https://fedoraproject.org/wiki/Fedora_36_Mass_Rebuild
+
+* Sun Nov 28 2021 Mamoru TASAKA <mtasaka@fedoraproject.org> 21.11-4
+- empty commit to fix upgrade path from F35
+
+* Sat Nov 13 2021 Luya Tshimbalanga <luya@fedoraproject.org> 21.11-3
+- RPMAUTOSPEC: unresolvable merge
