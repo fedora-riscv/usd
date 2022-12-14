@@ -2,7 +2,7 @@
 # package version, as a reminder of the need to rebuild dependent packages on
 # every update. See additional notes near the downstream ABI versioning patch.
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
-%global downstream_so_version 0.22.8
+%global downstream_so_version 0.22.11
 
 %bcond_without  alembic
 %bcond_with     documentation
@@ -13,6 +13,7 @@
 %bcond_with     openvdb
 %bcond_without  ocio
 %bcond_without  oiio
+%bcond_without  ptex
 %bcond_without  python3
 # Not yet packaged
 %bcond_with     pyside6
@@ -23,7 +24,7 @@
 %bcond_with  test
 
 Name:           usd
-Version:        22.08
+Version:        22.11
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -87,28 +88,7 @@ Source2:        stb_image.patch
 # to be versioned as well, which is undesired. This is not a serious problem
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
-Patch:          USD-22.08-soversion.patch
-
-# Add missing #include for GCC13
-# https://github.com/PixarAnimationStudios/USD/pull/2215
-Patch:          %{forgeurl}/pull/2215.patch
-
-# Support OpenEXR 3
-# https://github.com/PixarAnimationStudios/USD/issues/1591
-#
-# See also:
-# Support compiling against imath
-# https://github.com/PixarAnimationStudios/USD/pull/1829
-# Support OpenVDB without depending on OpenEXR
-# https://github.com/PixarAnimationStudios/USD/pull/1728
-Patch:          USD-22.08-OpenEXR3.patch
-
-# Do not access PyFrameObject fields directly on Python 3.10+
-#
-# Fixes a Python 3.11 incompatibility. Still accesses PyCodeObject fields
-# directly.
-# https://github.com/PixarAnimationStudios/USD/pull/1928
-Patch:          %{forgeurl}/pull/1928.patch
+Patch:          USD-22.11-soversion.patch
 
 # Port to Embree 4.x
 # https://github.com/PixarAnimationStudios/USD/pull/2266
@@ -119,6 +99,10 @@ Patch:          %{forgeurl}/pull/2266.patch
 # Part of https://github.com/PixarAnimationStudios/USD/pull/2176/ (currently under review)
 # Needed for boost 1.81
 Patch:          USD-pr2176-pxr_vt_hash-use-tfhash.patch
+
+# Add missing #include for GCC13
+# https://github.com/PixarAnimationStudios/USD/pull/2215
+Patch:          %{forgeurl}/pull/2215.patch
 
 # Add missing header for g++13
 # https://github.com/PixarAnimationStudios/USD/commit/c1c1c1de039451afaba9a0e04b50f4607df67886
@@ -165,7 +149,9 @@ BuildRequires:  pkgconfig(OpenImageIO)
 %endif
 BuildRequires:  cmake(OpenEXR)
 BuildRequires:  cmake(Imath) >= 2.0
+%if %{with ptex}
 BuildRequires:  pkgconfig(Ptex)
+%endif
 
 %endif
 %if %{with alembic}
@@ -397,12 +383,14 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %if %{with oiio}
      -DPXR_BUILD_OPENIMAGEIO_PLUGIN=ON \
 %endif
+%if %{with ptex}
+     -DPXR_ENABLE_PTEX_SUPPORT=ON \
+%endif
 %if %{with openshading}
      -DPXR_ENABLE_OSL_SUPPORT=ON \
 %endif
      -DPYTHON_EXECUTABLE=%{python3} \
 %if %{with python3}
-     -DPXR_USE_PYTHON_3=ON \
      -DPYSIDE_AVAILABLE=ON \
      -DPYSIDEUICBINARY:PATH=${PWD}/uic-wrapper \
 %else
@@ -438,13 +426,11 @@ mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
         %{buildroot}%{python3_sitearch}/pxr/Usdviewq/
 %endif
 
-# Currently, the pxrConfig.cmake that is installed is not correct for
-# monolithic builds (and we must do a monolithic build in order to be usable as
-# a dependency for Blender). It relies on the libraries that would be in
-# pxrTargets.cmake, which is not generated for monolithic builds.
-# https://bugzilla.redhat.com/show_bug.cgi?id=2055414
-# https://github.com/PixarAnimationStudios/USD/issues/1088
-rm -vrf '%{buildroot}%{_libdir}/cmake'
+# TODO: Can we figure out how to fix the installation path for
+# pxrTargets{,-release}.cmake, instead of moving them after the fact? We choose
+# to put them in the same directory as pxrConfig.cmake.
+find %{buildroot}%{_prefix}/cmake -mindepth 1 -maxdepth 1 -type f \
+    -exec mv -v '{}' '%{buildroot}%{_libdir}/cmake/pxr' ';'
 
 %check
 %if %{with usdview}
@@ -462,6 +448,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_bindir}/usddiff
 %{_bindir}/usddumpcrate
 %{_bindir}/usdedit
+%{_bindir}/usdfixbrokenpixarschemas
 %{_bindir}/usdgenschemafromsdr
 %{_bindir}/usdrecord
 %{_bindir}/usdresolve
@@ -472,7 +459,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 
 %if %{with python3}
 %files -n python3-%{name}
-%{python3_sitearch}/pxr
+%{python3_sitearch}/pxr/
 %if %{with usdview}
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
@@ -484,7 +471,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %license LICENSE.txt
 %doc NOTICE.txt README.md
 %{_libdir}/lib%{name}_ms.so.%{downstream_so_version}
-%{_libdir}/%{name}
+%{_libdir}/%{name}/
 %exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
 
 %files devel
@@ -492,11 +479,14 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_includedir}/pxr/
 %{_libdir}/lib%{name}_ms.so
 %{_libdir}/%{name}/%{name}/resources/codegenTemplates/
+%{_libdir}/cmake/pxr/pxrConfig.cmake
+%{_libdir}/cmake/pxr/pxrTargets.cmake
+%{_libdir}/cmake/pxr/pxrTargets-release.cmake
 
 %if %{with documentation}
 %files doc
 %license LICENSE.txt
-%{_docdir}/%{name}
+%{_docdir}/%{name}/
 %endif
 
 %changelog
