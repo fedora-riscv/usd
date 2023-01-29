@@ -1,0 +1,21 @@
+From d40f0322e16dd3253181b65a5f10af9dcef0a845 Mon Sep 17 00:00:00 2001
+From: "Benjamin A. Beasley" <code@musicinmybrain.net>
+Date: Sun, 29 Jan 2023 14:19:35 -0500
+Subject: [PATCH] Add missing #include for GCC13
+
+---
+ pxr/base/arch/virtualMemory.cpp | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/pxr/base/arch/virtualMemory.cpp b/pxr/base/arch/virtualMemory.cpp
+index 4337b8c31e..3c409fab48 100644
+--- a/pxr/base/arch/virtualMemory.cpp
++++ b/pxr/base/arch/virtualMemory.cpp
+@@ -26,6 +26,7 @@
+ #include "pxr/base/arch/defines.h"
+ #include "pxr/base/arch/systemInfo.h"
+ 
++#include <cstdint>
+ #if defined(ARCH_OS_WINDOWS)
+ #include <Windows.h>
+ #include <Memoryapi.h>

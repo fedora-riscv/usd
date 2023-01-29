@@ -79,6 +79,9 @@ Source1:        org.open%{name}.%{name}view.desktop
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
 Patch:          USD-22.05-soversion.patch
+# Add missing #include for GCC13
+# https://github.com/PixarAnimationStudios/USD/pull/2215
+Patch:          %{forgeurl}/pull/2215.patch
 
 # Support OpenEXR 3
 # https://github.com/PixarAnimationStudios/USD/issues/1591
