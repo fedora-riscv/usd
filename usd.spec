@@ -363,6 +363,8 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %if %{with embree}
      -DPXR_BUILD_EMBREE_PLUGIN=ON \
      -DEMBREE_LOCATION=%{_prefix} \
+     -DEMBREE_INCLUDE_DIR=%{_includedir}/embree4 \
+     -DEMBREE_LIBRARY=%{_lidir}/embree4.so \
 %endif
 %if %{with ocio}
      -DPXR_BUILD_OPENCOLORIO_PLUGIN=ON \
