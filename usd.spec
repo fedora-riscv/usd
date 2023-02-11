@@ -111,6 +111,10 @@ Patch:          %{forgeurl}/pull/1830.patch
 # https://github.com/PixarAnimationStudios/USD/pull/1928
 Patch:          %{forgeurl}/pull/1928.patch
 
+# Port to Embree 4.x
+# https://github.com/PixarAnimationStudios/USD/pull/2266
+Patch:          %{forgeurl}/pull/2266.patch
+
 # Base
 BuildRequires:  boost-devel
 BuildRequires:  boost-program-options
@@ -317,6 +321,11 @@ sed -i 's|plugin/usd|%{_libdir}/usd/plugin|g' \
 # Fix cmake directory destination
 sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
 
+# Use Embree4 instead of Embree3. The find-then-modify pattern preserves mtimes
+# on sources that did not need to be modified.
+find . -type f -exec gawk '/embree3/ { print FILENAME }' '{}' '+' |
+  xargs -r sed -r -i 's/(embree)3/\14/'
+
 %build
 # Fix uic-qt5 use
 cat > uic-wrapper <<'EOF'
@@ -363,8 +372,6 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %if %{with embree}
      -DPXR_BUILD_EMBREE_PLUGIN=ON \
      -DEMBREE_LOCATION=%{_prefix} \
-     -DEMBREE_INCLUDE_DIR=%{_includedir}/embree4 \
-     -DEMBREE_LIBRARY=%{_lidir}/embree4.so \
 %endif
 %if %{with ocio}
      -DPXR_BUILD_OPENCOLORIO_PLUGIN=ON \
