@@ -1,0 +1,49 @@
+From 326cad6188af42389e7e629250ea8bf16580b524 Mon Sep 17 00:00:00 2001
+From: Matt Kuruc <mkuruc@nvidia.com>
+Date: Mon, 23 Jan 2023 12:33:05 -0800
+Subject: [PATCH] Replace boost hash usage with TfHash in pxr/base/vt
+
+---
+ pxr/base/vt/array.h               | 15 +++++++++------
+ pxr/base/vt/dictionary.h          |  3 +--
+ pxr/base/vt/hash.cpp              |  4 ++--
+ pxr/base/vt/hash.h                | 26 +++++---------------------
+ pxr/base/vt/testenv/testVtCpp.cpp | 12 ++++++++++++
+ pxr/base/vt/value.cpp             | 12 +-----------
+ 6 files changed, 30 insertions(+), 42 deletions(-)
+
+diff --git a/pxr/base/vt/hash.h b/pxr/base/vt/hash.h
+index 47ca66e797..6df07c58f3 100644
+--- a/pxr/base/vt/hash.h
++++ b/pxr/base/vt/hash.h
+@@ -38,28 +37,15 @@ namespace Vt_HashDetail {
+ // Issue a coding error when we attempt to hash a t.
+ VT_API void _IssueUnimplementedHashError(std::type_info const &t);
+ 
+-// We make unqualified calls, intending to pick up boost::hash_value if an
+-// overload isn't found by ADL.
+-using boost::hash_value;
+-
+ // A constexpr function that determines hashability.
+-template <class T, class = decltype(hash_value(std::declval<T>()))>
+-constexpr bool _IsHashable(int) { return true; }
+ template <class T, class = decltype(TfHash()(std::declval<T>()))>
+ constexpr bool _IsHashable(long) { return true; }
+ template <class T>
+ constexpr bool _IsHashable(...) { return false; }
+ 
+ // Hash implementations -- We're using an overload resolution ordering trick
+-// here (int vs long vs ...) so that we pick hash_value first, if possible,
+-// otherwise we do TfHash() if possible, otherwise we issue a runtime error.
+-template <class T, class = decltype(hash_value(std::declval<T>()))>
+-inline size_t
+-_HashValueImpl(T const &val, int)
+-{
+-    return hash_value(val);
+-}
+-
++// here (long vs ...) so that we pick TfHash() if possible, otherwise
++// we issue a runtime error.
+ template <class T, class = decltype(TfHash()(std::declval<T>()))>
+ inline size_t
+ _HashValueImpl(T const &val, long)

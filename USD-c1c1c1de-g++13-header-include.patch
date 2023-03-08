@@ -1,0 +1,36 @@
+From c1c1c1de039451afaba9a0e04b50f4607df67886 Mon Sep 17 00:00:00 2001
+From: sunyab <sunyab@users.noreply.github.com>
+Date: Mon, 23 Jan 2023 13:18:04 -0800
+Subject: [PATCH] Add missing headers that caused build failures when building
+ with boost 1.78.
+
+(Internal change: 2260370)
+---
+ pxr/base/gf/plane.h         | 1 +
+ pxr/base/tf/stringUtils.cpp | 1 +
+ 2 files changed, 2 insertions(+)
+
+diff --git a/pxr/base/gf/plane.h b/pxr/base/gf/plane.h
+index 61c731085a..f4df8796e4 100644
+--- a/pxr/base/gf/plane.h
++++ b/pxr/base/gf/plane.h
+@@ -32,6 +32,7 @@
+ #include "pxr/base/gf/api.h"
+ 
+ #include <iosfwd>
++#include <vector>
+ 
+ PXR_NAMESPACE_OPEN_SCOPE
+ 
+diff --git a/pxr/base/tf/stringUtils.cpp b/pxr/base/tf/stringUtils.cpp
+index 19f20f4fc3..02482983ac 100644
+--- a/pxr/base/tf/stringUtils.cpp
++++ b/pxr/base/tf/stringUtils.cpp
+@@ -37,6 +37,7 @@
+ #include <boost/type_traits/is_signed.hpp>
+ #include <boost/utility/enable_if.hpp>
+ 
++#include <algorithm>
+ #include <climits>
+ #include <cstdarg>
+ #include <ctype.h>
