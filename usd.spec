@@ -226,7 +226,6 @@ interchange between graphics applications.
 
 %package        devel
 Summary:        Development files for USD
-Requires:       cmake-filesystem
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
 
 %description devel
