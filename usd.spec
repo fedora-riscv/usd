@@ -2,7 +2,7 @@
 # package version, as a reminder of the need to rebuild dependent packages on
 # every update. See additional notes near the downstream ABI versioning patch.
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
-%global downstream_so_version 0.22.11
+%global downstream_so_version 0.23.02
 
 %bcond_without  alembic
 %bcond_with     documentation
@@ -24,7 +24,7 @@
 %bcond_with  test
 
 Name:           usd
-Version:        22.11
+Version:        23.02
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -34,6 +34,7 @@ Summary:        3D VFX pipeline interchange file format
 #   - pxr/base/gf/ilmbase_*
 #   - pxr/base/js/rapidjson/msinttypes/
 #   - pxr/base/tf/pxrDoubleConversion/
+#   - pxr/base/tf/pxrCLI11/
 # BSD-2-Clause:
 #   - pxr/base/tf/pxrLZ4/
 # MIT:
@@ -88,7 +89,7 @@ Source2:        stb_image.patch
 # to be versioned as well, which is undesired. This is not a serious problem
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
-Patch:          USD-22.11-soversion.patch
+Patch:          USD-23.02-soversion.patch
 
 # Port to Embree 4.x
 # https://github.com/PixarAnimationStudios/USD/pull/2266
@@ -104,13 +105,8 @@ Patch:          USD-pr2176-pxr_vt_hash-use-tfhash.patch
 # https://github.com/PixarAnimationStudios/USD/pull/2215
 Patch:          %{forgeurl}/pull/2215.patch
 
-# Add missing header for g++13
-# https://github.com/PixarAnimationStudios/USD/commit/c1c1c1de039451afaba9a0e04b50f4607df67886
-Patch:          USD-c1c1c1de-g++13-header-include.patch
-
 # Base
 BuildRequires:  boost-devel
-BuildRequires:  boost-program-options
 BuildRequires:  cmake
 BuildRequires:  dos2unix
 BuildRequires:  gcc-c++
@@ -200,6 +196,8 @@ Provides:       bundled(double-conversion) = 2.0.0
 Provides:       bundled(ilmbase) = 2.5.3
 # Version from: pxr/base/tf/pxrLZ4/lz4.h (LZ4_VERSION_{MAJOR,MINOR_PATCH})
 Provides:       bundled(lz4) = 1.9.2
+# Version from: pxr/base/tf/pxrCLI11/README.md
+Provides:       bundled(cli11) = 2.3.1
 # Version from:
 # third_party/renderman-24/plugin/rmanArgsParser/pugixml/pugiconfig.hpp
 # (header comment)
@@ -383,6 +381,7 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %if %{with oiio}
      -DPXR_BUILD_OPENIMAGEIO_PLUGIN=ON \
 %endif
+     -DPXR_ENABLE_HDF5_SUPPORT=ON \
 %if %{with ptex}
      -DPXR_ENABLE_PTEX_SUPPORT=ON \
 %endif
