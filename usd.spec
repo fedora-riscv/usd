@@ -9,8 +9,8 @@
 %bcond_without  embree
 %bcond_without  imaging
 %bcond_with     jemalloc
-%bcond_with     openshading
-%bcond_with     openvdb
+%bcond_without  openshading
+%bcond_without  openvdb
 %bcond_without  ocio
 %bcond_without  oiio
 %bcond_without  ptex
