@@ -432,6 +432,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_bindir}/usdGenSchema
 %{_bindir}/usdcat
 %{_bindir}/usdchecker
+%if %{with draco}
+%{_bindir}/usdcompress
+%endif
 %{_bindir}/usddiff
 %{_bindir}/usddumpcrate
 %{_bindir}/usdedit
@@ -442,17 +445,14 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_bindir}/usdstitchclips
 %{_bindir}/usdtree
 %{_bindir}/usdzip
-
-%files -n python3-%{name}
-%{python3_sitearch}/pxr/
-%if %{with draco}
-%{_bindir}/usdcompress
-%endif
 %if %{with usdview}
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
 %{_bindir}/usdview
 %endif
+
+%files -n python3-%{name}
+%{python3_sitearch}/pxr/
 
 %files libs
 %license LICENSE.txt
