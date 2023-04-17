@@ -14,7 +14,6 @@
 %bcond_without  openvdb
 %bcond_without  ocio
 %bcond_without  oiio
-%bcond_without  python3
 %bcond_without  usdview
 # TODO: Figure out how to re-enable the tests. Currently these want to install
 # into /usr/tests and, and there are issues with the launchers finding the
@@ -181,9 +180,7 @@ BuildRequires:  stb_image_resize-devel >= 0.97
 BuildRequires:  stb_image_resize-static
 
 Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-%if %{with python3}
 Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
-%endif
 
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
@@ -239,7 +236,6 @@ libraries for %{name}. If you would like to develop programs using %{name},
 you will need to install %{name}-devel.
 
 # For usdview, usdcompress
-%if %{with python3}
 %package -n python3-%{name}
 Summary: %{summary}
 
@@ -264,7 +260,7 @@ Requires:       python3dist(pyopengl)
 
 %description -n python3-%{name}
 Python language bindings for the Universal Scene Description (USD) C++ API
-%endif
+
 
 %if %{with documentation}
 %package        doc
@@ -281,10 +277,8 @@ Documentation for the Universal Scene Description (USD) C++ API
 # Convert NOTICE.txt from CRNL line encoding
 dos2unix NOTICE.txt
 
-%if %{with python3}
 # Fix all Python shebangs recursively in .
 %py3_shebang_fix .
-%endif
 
 # Further drop shebangs line for some py files
 sed -r -i '1{/^#!/d}' \
@@ -338,9 +332,6 @@ exec uic-qt5 -g python "$@"
 EOF
 chmod +x uic-wrapper
 
-# Fix python3 support
-# https://github.com/PixarAnimationStudios/USD/issues/1419
-
 flags="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
 # Patch2 was not good enough to get the include path for Imath everywhere it
 # was needed. Add it globally.
@@ -390,13 +381,9 @@ flags="${flags} $(pkgconf --cflags Imath)"
      -DPXR_ENABLE_OSL_SUPPORT=ON \
 %endif
      -DPYTHON_EXECUTABLE=%{python3} \
-%if %{with python3}
      -DPXR_USE_PYTHON_3=ON \
      -DPYSIDE_AVAILABLE=ON \
      -DPYSIDEUICBINARY:PATH=${PWD}/uic-wrapper \
-%else
-     -DPXR_ENABLE_PYTHON_SUPPORT=OFF \
-%endif
      -DPXR_BUILD_MONOLITHIC=ON \
      -DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF
 %cmake_build
@@ -459,7 +446,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_bindir}/usdtree
 %{_bindir}/usdzip
 
-%if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/pxr/
 %if %{with draco}
@@ -469,7 +455,6 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
 %{_bindir}/usdview
-%endif
 %endif
 
 %files libs
