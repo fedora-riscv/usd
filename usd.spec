@@ -6,6 +6,7 @@
 
 %bcond_without  alembic
 %bcond_with     documentation
+%bcond_without  draco
 %bcond_without  embree
 %bcond_without  imaging
 %bcond_with     jemalloc
@@ -122,6 +123,9 @@ BuildRequires:  graphviz
 # For imaging and usd imaging
 %if %{with imaging}
 
+%if %{with draco}
+BuildRequires:  draco-devel
+%endif
 %if %{with embree}
 BuildRequires:  embree-devel
 %endif
@@ -227,7 +231,7 @@ This package contains the C++ header files and symbolic links to the shared
 libraries for %{name}. If you would like to develop programs using %{name},
 you will need to install %{name}-devel.
 
-# For usdview
+# For usdview, usdcompress
 %if %{with python3}
 %package -n python3-%{name}
 Summary: %{summary}
@@ -370,6 +374,9 @@ flags="${flags} $(pkgconf --cflags Imath)"
      -DOPENEXR_LOCATION=%{_includedir} \
      -DPXR_BUILD_ALEMBIC_PLUGIN=ON \
 %endif
+%if %{with draco}
+     -DPXR_BUILD_DRACO_PLUGIN=ON \
+%endif
 %if %{with embree}
      -DPXR_BUILD_EMBREE_PLUGIN=ON \
      -DEMBREE_LOCATION=%{_prefix} \
@@ -458,6 +465,9 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %if %{with python3}
 %files -n python3-%{name}
 %{python3_sitearch}/pxr/
+%if %{with draco}
+%{_bindir}/usdcompress
+%endif
 %if %{with usdview}
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
