@@ -54,9 +54,9 @@ Summary:        3D VFX pipeline interchange file format
 # do not contribute their license terms to the built RPMs.)
 License:        Apache-2.0 AND BSD-3-Clause AND BSD-2-Clause AND MIT AND (MIT OR Unlicense) AND (Apache-2.0 AND GPL-3.0-or-later WITH Bison-exception-2.2)
 URL:            http://www.openusd.org/
-%global forgeurl https://github.com/PixarAnimationStudios/%{name}
-Source0:        %{forgeurl}/archive/v%{version}/%{name}-%{version}.tar.gz
-Source1:        org.open%{name}.%{name}view.desktop
+%global forgeurl https://github.com/PixarAnimationStudios/usd
+Source0:        %{forgeurl}/archive/v%{version}/usd-%{version}.tar.gz
+Source1:        org.openusd.usdview.desktop
 # Latest stb_image.patch that applies cleanly against 2.27:
 #   %%{forgeurl}/raw/8f9bb9563980b41e7695148b63bf09f7abd38a41/pxr/imaging/hio/stb/stb_image.patch
 # We treat this as a source file because it is applied separately during
@@ -170,8 +170,8 @@ BuildRequires:  stb_image_write-static
 BuildRequires:  stb_image_resize-devel >= 0.97
 BuildRequires:  stb_image_resize-static
 
-Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
-Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
+Requires:       usd-libs%{?_isa} = %{version}-%{release}
+Requires:       python3-usd%{?_isa} = %{version}-%{release}
 
 # This package is only available for x86_64 and aarch64
 # Will fail to build on other architectures
@@ -221,15 +221,15 @@ interchange between graphics applications.
 
 %package        devel
 Summary:        Development files for USD
-Requires:       %{name}-libs%{?_isa} = %{version}-%{release}
+Requires:       usd-libs%{?_isa} = %{version}-%{release}
 
 %description devel
 This package contains the C++ header files and symbolic links to the shared
-libraries for %{name}. If you would like to develop programs using %{name},
-you will need to install %{name}-devel.
+libraries for usd. If you would like to develop programs using usd,
+you will need to install usd-devel.
 
 # For usdview, usdcompress
-%package -n python3-%{name}
+%package -n python3-usd
 Summary: %{summary}
 
 BuildRequires:  pkgconfig(python3)
@@ -259,7 +259,7 @@ Requires:       python3dist(pyside2)
 Requires:       python3dist(pyopengl)
 %py_provides    python3-pxr
 
-%description -n python3-%{name}
+%description -n python3-usd
 Python language bindings for the Universal Scene Description (USD) C++ API
 
 
@@ -357,7 +357,7 @@ flags="${flags} $(pkgconf --cflags Imath)"
 %if %{with openvdb}
      -DPXR_ENABLE_OPENVDB_SUPPORT=ON \
 %endif
-     -DPXR_INSTALL_LOCATION="%{_libdir}/%{name}/plugin" \
+     -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
 %if %{with jemalloc}
      -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
 %endif
@@ -408,7 +408,7 @@ desktop-file-install                                    \
 
 # Remove examples that were built and installed even though we set
 # -DPXR_BUILD_EXAMPLES=OFF.
-rm -vrf '%{buildroot}%{_datadir}/%{name}/examples'
+rm -vrf '%{buildroot}%{_datadir}/usd/examples'
 
 # Fix installation path for some files
 mv %{buildroot}%{_prefix}/lib/python/pxr/*.* \
@@ -426,7 +426,7 @@ find %{buildroot}%{_prefix}/cmake -mindepth 1 -maxdepth 1 -type f \
 
 %check
 %if %{with usdview}
-desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{name}view.desktop
+desktop-file-validate %{buildroot}%{_datadir}/applications/org.openusd.usdview.desktop
 %endif
 %{?with_test:%ctest}
 
@@ -452,26 +452,26 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_bindir}/usdtree
 %{_bindir}/usdzip
 %if %{with usdview}
-%{_datadir}/applications/org.open%{name}.%{name}view.desktop
+%{_datadir}/applications/org.openusd.usdview.desktop
 %{_bindir}/testusdview
 %{_bindir}/usdview
 %endif
 
-%files -n python3-%{name}
+%files -n python3-usd
 %{python3_sitearch}/pxr/
 
 %files libs
 %license LICENSE.txt
 %doc NOTICE.txt README.md
-%{_libdir}/lib%{name}_ms.so.%{downstream_so_version}
-%{_libdir}/%{name}/
-%exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
+%{_libdir}/libusd_ms.so.%{downstream_so_version}
+%{_libdir}/usd/
+%exclude %{_libdir}/usd/usd/resources/codegenTemplates
 
 %files devel
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
-%{_libdir}/lib%{name}_ms.so
-%{_libdir}/%{name}/%{name}/resources/codegenTemplates/
+%{_libdir}/libusd_ms.so
+%{_libdir}/usd/usd/resources/codegenTemplates/
 %{_libdir}/cmake/pxr/pxrConfig.cmake
 %{_libdir}/cmake/pxr/pxrTargets.cmake
 %{_libdir}/cmake/pxr/pxrTargets-release.cmake
@@ -479,7 +479,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %if %{with documentation}
 %files doc
 %license LICENSE.txt
-%{_docdir}/%{name}/
+%{_docdir}/usd/
 %endif
 
 %changelog
