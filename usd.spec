@@ -362,35 +362,41 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
 %endif
      -DCMAKE_CXX_FLAGS_RELEASE="${CXXFLAGS-} ${extra_flags}" \
-     -DCMAKE_C_FLAGS_RELEASE="${CFLAGS-} ${extra_flags}" \
      -DCMAKE_CXX_STANDARD=17 \
+     -DCMAKE_C_FLAGS_RELEASE="${CFLAGS-} ${extra_flags}" \
      -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
      -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
-     -DCMAKE_SKIP_RPATH=ON \
      -DCMAKE_SKIP_INSTALL_RPATH=ON \
+     -DCMAKE_SKIP_RPATH=ON \
      -DCMAKE_VERBOSE_MAKEFILE=ON \
-     -DPXR_BUILD_USDVIEW=%{expr:%{with usdview}?"ON":"OFF"} \
+     \
      -DPXR_BUILD_DOCUMENTATION=%{expr:%{with documentation}?"TRUE":"FALSE"} \
      -DPXR_BUILD_EXAMPLES=OFF \
-     -DPXR_BUILD_TUTORIALS=OFF \
+     -DPXR_BUILD_MONOLITHIC=ON \
      -DPXR_BUILD_TESTS=%{expr:%{with test}?"ON":"OFF"} \
-     -DPXR_ENABLE_OPENVDB_SUPPORT=%{expr:%{with openvdb}?"ON":"OFF"} \
-     -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
-     -DOPENEXR_LOCATION=%{_includedir} \
+     -DPXR_BUILD_TUTORIALS=OFF \
+     -DPXR_BUILD_USDVIEW=%{expr:%{with usdview}?"ON":"OFF"} \
+     \
      -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
      -DPXR_BUILD_DRACO_PLUGIN=%{expr:%{with draco}?"ON":"OFF"} \
      -DPXR_BUILD_EMBREE_PLUGIN=%{expr:%{with embree}?"ON":"OFF"} \
-     -DEMBREE_LOCATION=%{_prefix} \
      -DPXR_BUILD_OPENCOLORIO_PLUGIN=%{expr:%{with ocio}?"ON":"OFF"} \
      -DPXR_BUILD_OPENIMAGEIO_PLUGIN=%{expr:%{with oiio}?"ON":"OFF"} \
+     \
+     -DPXR_ENABLE_OPENVDB_SUPPORT=%{expr:%{with openvdb}?"ON":"OFF"} \
      -DPXR_ENABLE_HDF5_SUPPORT=ON \
      -DPXR_ENABLE_PTEX_SUPPORT=%{expr:%{with ptex}?"ON":"OFF"} \
      -DPXR_ENABLE_OSL_SUPPORT=%{expr:%{with openshading}?"ON":"OFF"} \
-     -DPYTHON_EXECUTABLE=%{python3} \
-     -DPYSIDE_AVAILABLE=ON \
+     -DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF \
+     \
+     -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
+     \
+     -DEMBREE_LOCATION=%{_prefix} \
+     -DOPENEXR_LOCATION=%{_includedir} \
+     \
      -DPYSIDEUICBINARY:PATH=${PWD}/uic-wrapper \
-     -DPXR_BUILD_MONOLITHIC=ON \
-     -DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF
+     -DPYSIDE_AVAILABLE=ON \
+     -DPYTHON_EXECUTABLE=%{python3}
 %cmake_build
 
 %install
