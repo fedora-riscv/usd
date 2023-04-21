@@ -10,6 +10,8 @@
 %bcond_without  embree
 %bcond_without  imaging
 %bcond_with     jemalloc
+# Not yet packaged: https://github.com/AcademySoftwareFoundation/MaterialX
+%bcond_with     materialx
 # Default "UNIX Makefiles" backend for CMake would also work fine; ninja is a
 # bit faster. We conditionalize it just in case there are backend-specific
 # issues in the future.
@@ -380,8 +382,10 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
      -DPXR_BUILD_DRACO_PLUGIN=%{expr:%{with draco}?"ON":"OFF"} \
      -DPXR_BUILD_EMBREE_PLUGIN=%{expr:%{with embree}?"ON":"OFF"} \
+     -DPXR_BUILD_MATERIALX_PLUGIN=%{expr:%{with materialx}?"ON":"OFF"} \
      -DPXR_BUILD_OPENCOLORIO_PLUGIN=%{expr:%{with ocio}?"ON":"OFF"} \
      -DPXR_BUILD_OPENIMAGEIO_PLUGIN=%{expr:%{with oiio}?"ON":"OFF"} \
+     -DPXR_BUILD_PRMAN_PLUGIN=OFF \
      \
      -DPXR_ENABLE_OPENVDB_SUPPORT=%{expr:%{with openvdb}?"ON":"OFF"} \
      -DPXR_ENABLE_HDF5_SUPPORT=ON \
