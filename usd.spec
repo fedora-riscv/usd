@@ -154,12 +154,8 @@ BuildRequires:  pkgconfig(OpenColorIO) < 2
 %if %{with oiio}
 BuildRequires:  pkgconfig(OpenImageIO)
 %endif
-BuildRequires:  cmake(OpenEXR)
-%if 0%{?fedora} < 35
-BuildRequires:  pkgconfig(IlmBase) >= 2.0
-%else
-BuildRequires:  cmake(Imath) >= 2.0
-%endif
+BuildRequires:  cmake(OpenEXR) >= 3.0
+BuildRequires:  cmake(Imath) >= 3.0
 BuildRequires:  pkgconfig(Ptex)
 %endif
 %if %{with alembic}
