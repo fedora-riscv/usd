@@ -157,8 +157,8 @@ BuildRequires:  cmake(OpenColorIO)
 %if %{with oiio}
 BuildRequires:  pkgconfig(OpenImageIO)
 %endif
-BuildRequires:  cmake(OpenEXR)
-BuildRequires:  cmake(Imath) >= 2.0
+BuildRequires:  cmake(OpenEXR) >= 3.0
+BuildRequires:  cmake(Imath) >= 3.0
 BuildRequires:  pkgconfig(Ptex)
 
 %endif
