@@ -395,6 +395,8 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      \
      -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
      \
+     -DPXR_VALIDATE_GENERATED_CODE=OFF \
+     \
      -DEMBREE_LOCATION=%{_prefix} \
      -DOPENEXR_LOCATION=%{_includedir} \
      \
