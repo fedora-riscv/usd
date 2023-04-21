@@ -10,6 +10,10 @@
 %bcond_without  embree
 %bcond_without  imaging
 %bcond_with     jemalloc
+# Default "UNIX Makefiles" backend for CMake would also work fine; ninja is a
+# bit faster. We conditionalize it just in case there are backend-specific
+# issues in the future.
+%bcond_without  ninja
 %bcond_without  openshading
 %bcond_without  openvdb
 %bcond_without  ocio
@@ -106,10 +110,16 @@ Patch:          USD-pr2176-pxr_vt_hash-use-tfhash.patch
 Patch:          %{forgeurl}/pull/2215.patch
 
 # Base
-BuildRequires:  boost-devel
-BuildRequires:  cmake
-BuildRequires:  dos2unix
 BuildRequires:  gcc-c++
+
+BuildRequires:  cmake
+%if %{with ninja}
+BuildRequires:  ninja-build
+%endif
+
+BuildRequires:  dos2unix
+
+BuildRequires:  boost-devel
 BuildRequires:  pkgconfig(blosc)
 BuildRequires:  pkgconfig(tbb)
 
@@ -344,6 +354,12 @@ extra_flags="${extra_flags-} $(pkgconf --cflags Imath)"
 extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
 
 %cmake \
+%if %{with ninja}
+     -GNinja \
+%endif
+%if %{with jemalloc}
+     -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
+%endif
      -DCMAKE_CXX_FLAGS_RELEASE="${CXXFLAGS-} ${extra_flags}" \
      -DCMAKE_C_FLAGS_RELEASE="${CFLAGS-} ${extra_flags}" \
      -DCMAKE_CXX_STANDARD=17 \
@@ -359,9 +375,6 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DPXR_BUILD_TESTS=%{expr:%{with test}?"ON":"OFF"} \
      -DPXR_ENABLE_OPENVDB_SUPPORT=%{expr:%{with openvdb}?"ON":"OFF"} \
      -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
-%if %{with jemalloc}
-     -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
-%endif
      -DOPENEXR_LOCATION=%{_includedir} \
      -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
      -DPXR_BUILD_DRACO_PLUGIN=%{expr:%{with draco}?"ON":"OFF"} \
