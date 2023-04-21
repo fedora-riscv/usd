@@ -335,15 +335,16 @@ sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
 find . -type f -exec gawk '/embree3/ { print FILENAME }' '{}' '+' |
   xargs -r sed -r -i 's/(embree)3/\14/'
 
-%build
-%set_build_flags
-
 # Fix uic-qt5 use
 cat > uic-wrapper <<'EOF'
 #!/bin/sh
 exec uic-qt5 -g python "$@"
 EOF
 chmod +x uic-wrapper
+
+
+%build
+%set_build_flags
 
 # Although upstream supports OpenEXR3 / Imath now, the necessary include path
 # is not set everywhere it’s needed. It’s not immediately clear exactly why
