@@ -2,7 +2,7 @@
 # package version, as a reminder of the need to rebuild dependent packages on
 # every update. See additional notes near the downstream ABI versioning patch.
 # It should be 0.MAJOR.MINOR without leading zeros, e.g. 22.03 → 0.22.3.
-%global downstream_so_version 0.23.02
+%global downstream_so_version 0.23.05
 
 %bcond_without  alembic
 %bcond_with     documentation
@@ -29,7 +29,7 @@
 %bcond_with  test
 
 Name:           usd
-Version:        23.02
+Version:        23.05
 Release:        %autorelease
 Summary:        3D VFX pipeline interchange file format
 
@@ -94,21 +94,11 @@ Source2:        stb_image.patch
 # to be versioned as well, which is undesired. This is not a serious problem
 # because we do not want to package the built plugin anyway. (It should not be
 # built with -DPXR_BUILD_EXAMPLES=OFF, but it is.)
-Patch:          USD-23.02-soversion.patch
+Patch:          USD-23.05-soversion.patch
 
 # Port to Embree 4.x
 # https://github.com/PixarAnimationStudios/USD/pull/2266
 Patch:          %{forgeurl}/pull/2266.patch
-
-# Prefer TfHash to boost::hash
-# Part of https://github.com/PixarAnimationStudios/USD/issues/2172
-# Part of https://github.com/PixarAnimationStudios/USD/pull/2176/ (currently under review)
-# Needed for boost 1.81
-Patch:          USD-pr2176-pxr_vt_hash-use-tfhash.patch
-
-# Add missing #include for GCC13
-# https://github.com/PixarAnimationStudios/USD/pull/2215
-Patch:          %{forgeurl}/pull/2215.patch
 
 # Base
 BuildRequires:  gcc-c++
@@ -220,7 +210,7 @@ Provides:       bundled(cli11) = 2.3.1
 Provides:       bundled(pugixml) = 1.9
 # Version from: pxr/base/js/rapidjson/rapidjson.h
 # (RAPIDJSON_{MAJOR,MINOR,PATCH}_VERSION)
-Provides:       bundled(rapidjson) = 1.0.2
+Provides:       bundled(rapidjson) = 1.1.0
 # Version from: pxr/imaging/hgiVulkan/spirv_reflect.h (header comment)
 Provides:       bundled(SPIRV-Reflect) = 1.0
 # Version from: pxr/imaging/hgiVulkan/vk_mem_alloc.h (header comment)
@@ -399,13 +389,11 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DPXR_ENABLE_PTEX_SUPPORT=%{expr:%{with ptex}?"ON":"OFF"} \
      -DPXR_ENABLE_OSL_SUPPORT=%{expr:%{with openshading}?"ON":"OFF"} \
      -DPXR_ENABLE_MALLOCHOOK_SUPPORT=OFF \
+     -DPXR_ENABLE_PYTHON_SUPPORT=ON \
      \
      -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
      \
      -DPXR_VALIDATE_GENERATED_CODE=OFF \
-     \
-     -DEMBREE_LOCATION=%{_prefix} \
-     -DOPENEXR_LOCATION=%{_includedir} \
      \
      -DPYSIDEUICBINARY:PATH=${PWD}/uic-wrapper \
      -DPYSIDE_AVAILABLE=ON \

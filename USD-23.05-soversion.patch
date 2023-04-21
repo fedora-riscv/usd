@@ -1,4 +1,4 @@
-From a5c6a2e45bb21c72c5447a64507425a483ac63b0 Mon Sep 17 00:00:00 2001
+From 1be919609dfecfd8df2e119d1f489676d2193629 Mon Sep 17 00:00:00 2001
 From: "Benjamin A. Beasley" <code@musicinmybrain.net>
 Date: Mon, 20 Mar 2023 09:59:18 -0400
 Subject: [PATCH] Support downstream .so versioning
@@ -10,11 +10,11 @@ Subject: [PATCH] Support downstream .so versioning
  3 files changed, 8 insertions(+)
 
 diff --git a/cmake/defaults/Version.cmake b/cmake/defaults/Version.cmake
-index 872881b4b..58806c9be 100644
+index 647b8aabe..727ce577f 100644
 --- a/cmake/defaults/Version.cmake
 +++ b/cmake/defaults/Version.cmake
 @@ -27,3 +27,9 @@ set(PXR_MINOR_VERSION "23")
- set(PXR_PATCH_VERSION "02")
+ set(PXR_PATCH_VERSION "05")
  
  math(EXPR PXR_VERSION "${PXR_MAJOR_VERSION} * 10000 + ${PXR_MINOR_VERSION} * 100 + ${PXR_PATCH_VERSION}")
 +
@@ -24,7 +24,7 @@ index 872881b4b..58806c9be 100644
 +    "Downstream shared object version"
 +)
 diff --git a/cmake/macros/Private.cmake b/cmake/macros/Private.cmake
-index 585db955e..f6def8087 100644
+index 23172745e..e3d8fd648 100644
 --- a/cmake/macros/Private.cmake
 +++ b/cmake/macros/Private.cmake
 @@ -1299,6 +1299,7 @@ function(_pxr_library NAME)
@@ -36,7 +36,7 @@ index 585db955e..f6def8087 100644
  
      target_compile_definitions(${NAME}
 diff --git a/cmake/macros/Public.cmake b/cmake/macros/Public.cmake
-index c201093ef..c86d16d9d 100644
+index a1734b6a2..24f51ba75 100644
 --- a/cmake/macros/Public.cmake
 +++ b/cmake/macros/Public.cmake
 @@ -1003,6 +1003,7 @@ function(pxr_toplevel_prologue)
