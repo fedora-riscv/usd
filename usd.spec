@@ -352,44 +352,26 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DCMAKE_SKIP_RPATH=ON \
      -DCMAKE_SKIP_INSTALL_RPATH=ON \
      -DCMAKE_VERBOSE_MAKEFILE=ON \
-     -DPXR_BUILD_USDVIEW=%{?with_usdview:ON}%{?!with_usdview:OFF} \
-%if %{with documentation}
-     -DPXR_BUILD_DOCUMENTATION=TRUE \
-%endif
+     -DPXR_BUILD_USDVIEW=%{expr:%{with usdview}?"ON":"OFF"} \
+     -DPXR_BUILD_DOCUMENTATION=%{expr:%{with documentation}?"TRUE":"FALSE"} \
      -DPXR_BUILD_EXAMPLES=OFF \
      -DPXR_BUILD_TUTORIALS=OFF \
-     -DPXR_BUILD_TESTS=%{?with_test:ON}%{!?with_test:OFF} \
-%if %{with openvdb}
-     -DPXR_ENABLE_OPENVDB_SUPPORT=ON \
-%endif
+     -DPXR_BUILD_TESTS=%{expr:%{with test}?"ON":"OFF"} \
+     -DPXR_ENABLE_OPENVDB_SUPPORT=%{expr:%{with openvdb}?"ON":"OFF"} \
      -DPXR_INSTALL_LOCATION="%{_libdir}/usd/plugin" \
 %if %{with jemalloc}
      -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
 %endif
-%if %{with alembic}
      -DOPENEXR_LOCATION=%{_includedir} \
-     -DPXR_BUILD_ALEMBIC_PLUGIN=ON \
-%endif
-%if %{with draco}
-     -DPXR_BUILD_DRACO_PLUGIN=ON \
-%endif
-%if %{with embree}
-     -DPXR_BUILD_EMBREE_PLUGIN=ON \
+     -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
+     -DPXR_BUILD_DRACO_PLUGIN=%{expr:%{with draco}?"ON":"OFF"} \
+     -DPXR_BUILD_EMBREE_PLUGIN=%{expr:%{with embree}?"ON":"OFF"} \
      -DEMBREE_LOCATION=%{_prefix} \
-%endif
-%if %{with ocio}
-     -DPXR_BUILD_OPENCOLORIO_PLUGIN=ON \
-%endif
-%if %{with oiio}
-     -DPXR_BUILD_OPENIMAGEIO_PLUGIN=ON \
-%endif
+     -DPXR_BUILD_OPENCOLORIO_PLUGIN=%{expr:%{with ocio}?"ON":"OFF"} \
+     -DPXR_BUILD_OPENIMAGEIO_PLUGIN=%{expr:%{with oiio}?"ON":"OFF"} \
      -DPXR_ENABLE_HDF5_SUPPORT=ON \
-%if %{with ptex}
-     -DPXR_ENABLE_PTEX_SUPPORT=ON \
-%endif
-%if %{with openshading}
-     -DPXR_ENABLE_OSL_SUPPORT=ON \
-%endif
+     -DPXR_ENABLE_PTEX_SUPPORT=%{expr:%{with ptex}?"ON":"OFF"} \
+     -DPXR_ENABLE_OSL_SUPPORT=%{expr:%{with openshading}?"ON":"OFF"} \
      -DPYTHON_EXECUTABLE=%{python3} \
      -DPYSIDE_AVAILABLE=ON \
      -DPYSIDEUICBINARY:PATH=${PWD}/uic-wrapper \
