@@ -316,6 +316,8 @@ sed -i 's|plugin/usd|%{_libdir}/usd/plugin|g' \
 sed -i 's|"${CMAKE_INSTALL_PREFIX}"|%{_libdir}/cmake/pxr|g' pxr/CMakeLists.txt
 
 %build
+%set_build_flags
+
 # Fix uic-qt5 use
 cat > uic-wrapper <<'EOF'
 #!/bin/sh
@@ -323,17 +325,20 @@ exec uic-qt5 -g python "$@"
 EOF
 chmod +x uic-wrapper
 
-flags="%{optflags} -Wl,--as-needed -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1" \
-# Patch2 was not good enough to get the include path for Imath everywhere it
-# was needed. Add it globally.
-# https://github.com/PixarAnimationStudios/USD/issues/1591
-flags="${flags} $(pkgconf --cflags Imath)"
+# Although upstream supports OpenEXR3 / Imath now, the necessary include path
+# is not set everywhere it’s needed. It’s not immediately clear exactly why
+# this is happening here or what should be changed upstream.
+extra_flags="${extra_flags-} $(pkgconf --cflags Imath)"
+# Suppress deprecation warnings from TBB; upstream should act on them
+# eventually, but they just add noise here.
+extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
 
 %cmake \
-     -DCMAKE_CXX_FLAGS_RELEASE="${flags}" \
-     -DCMAKE_C_FLAGS_RELEASE="${flags}" \
+     -DCMAKE_CXX_FLAGS_RELEASE="${CXXFLAGS-} ${extra_flags}" \
+     -DCMAKE_C_FLAGS_RELEASE="${CFLAGS-} ${extra_flags}" \
      -DCMAKE_CXX_STANDARD=17 \
-     -DCMAKE_EXE_LINKER_FLAGS="-pie" \
+     -DCMAKE_EXE_LINKER_FLAGS="${LDFLAGS}" \
+     -DCMAKE_SHARED_LINKER_FLAGS="${LDFLAGS}" \
      -DCMAKE_SKIP_RPATH=ON \
      -DCMAKE_SKIP_INSTALL_RPATH=ON \
      -DCMAKE_VERBOSE_MAKEFILE=ON \
