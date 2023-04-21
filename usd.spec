@@ -383,6 +383,7 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      -DPXR_BUILD_TESTS=%{expr:%{with test}?"ON":"OFF"} \
      -DPXR_BUILD_TUTORIALS=OFF \
      -DPXR_BUILD_USD_IMAGING=ON \
+     -DPXR_BUILD_USD_TOOLS=ON \
      -DPXR_BUILD_USDVIEW=%{expr:%{with usdview}?"ON":"OFF"} \
      \
      -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
