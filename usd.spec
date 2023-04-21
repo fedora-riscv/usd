@@ -8,7 +8,6 @@
 %bcond_with     documentation
 %bcond_without  draco
 %bcond_without  embree
-%bcond_without  imaging
 %bcond_with     jemalloc
 # Not yet packaged: https://github.com/AcademySoftwareFoundation/MaterialX
 %bcond_with     materialx
@@ -121,54 +120,58 @@ BuildRequires:  ninja-build
 
 BuildRequires:  dos2unix
 
-BuildRequires:  boost-devel
 BuildRequires:  pkgconfig(blosc)
+BuildRequires:  boost-devel
+BuildRequires:  pkgconfig(dri)
+BuildRequires:  hdf5-devel
+BuildRequires:  opensubdiv-devel
 BuildRequires:  pkgconfig(tbb)
 
-# Documentation
+BuildRequires:  cmake(OpenEXR) >= 3.0
+BuildRequires:  cmake(Imath) >= 3.0
+
+%if %{with alembic}
+BuildRequires:  cmake(Alembic)
+%endif
+
 %if %{with documentation}
 BuildRequires:  doxygen
 BuildRequires:  graphviz
 %endif
 
-# For imaging and usd imaging
-%if %{with imaging}
-
 %if %{with draco}
 BuildRequires:  draco-devel
 %endif
+
 %if %{with embree}
 BuildRequires:  embree-devel
 %endif
+
+%if %{with jemalloc}
+BuildRequires:  pkgconfig(jemalloc)
+%endif
+
+%if %{with ocio}
+BuildRequires:  cmake(OpenColorIO)
+%endif
+
+%if %{with oiio}
+BuildRequires:  pkgconfig(OpenImageIO)
+%endif
+
 %if %{with openshading}
 BuildRequires:  openshadinglanguage
 BuildRequires:  pkgconfig(oslexec)
 %endif
-BuildRequires:  opensubdiv-devel
+
 %if %{with openvdb}
 BuildRequires:  openvdb-devel
 %endif
-BuildRequires:  pkgconfig(dri)
-%if %{with jemalloc}
-BuildRequires:  pkgconfig(jemalloc)
-%endif
-%if %{with ocio}
-BuildRequires:  cmake(OpenColorIO)
-%endif
-%if %{with oiio}
-BuildRequires:  pkgconfig(OpenImageIO)
-%endif
-BuildRequires:  cmake(OpenEXR) >= 3.0
-BuildRequires:  cmake(Imath) >= 3.0
+
 %if %{with ptex}
 BuildRequires:  pkgconfig(Ptex)
 %endif
 
-%endif
-%if %{with alembic}
-BuildRequires:  cmake(Alembic)
-BuildRequires:  hdf5-devel
-%endif
 
 # Header-only library: -static is for tracking per guidelines
 #
@@ -363,6 +366,7 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
 %if %{with jemalloc}
      -DPXR_MALLOC_LIBRARY="%{_libdir}/libjemalloc.so" \
 %endif
+     \
      -DCMAKE_CXX_FLAGS_RELEASE="${CXXFLAGS-} ${extra_flags}" \
      -DCMAKE_CXX_STANDARD=17 \
      -DCMAKE_C_FLAGS_RELEASE="${CFLAGS-} ${extra_flags}" \
@@ -374,9 +378,11 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
      \
      -DPXR_BUILD_DOCUMENTATION=%{expr:%{with documentation}?"TRUE":"FALSE"} \
      -DPXR_BUILD_EXAMPLES=OFF \
+     -DPXR_BUILD_IMAGING=ON \
      -DPXR_BUILD_MONOLITHIC=ON \
      -DPXR_BUILD_TESTS=%{expr:%{with test}?"ON":"OFF"} \
      -DPXR_BUILD_TUTORIALS=OFF \
+     -DPXR_BUILD_USD_IMAGING=ON \
      -DPXR_BUILD_USDVIEW=%{expr:%{with usdview}?"ON":"OFF"} \
      \
      -DPXR_BUILD_ALEMBIC_PLUGIN=%{expr:%{with alembic}?"ON":"OFF"} \
