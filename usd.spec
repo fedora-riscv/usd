@@ -112,11 +112,16 @@ Patch:          %{forgeurl}/pull/1830.patch
 Patch:          %{forgeurl}/pull/1928.patch
 
 # Base
+BuildRequires:  gcc-c++
+
+BuildRequires:  cmake
+
+BuildRequires:  dos2unix
+BuildRequires:  help2man
+
+BuildRequires:  pkgconfig(blosc)
 BuildRequires:  boost-devel
 BuildRequires:  boost-program-options
-BuildRequires:  cmake
-BuildRequires:  dos2unix
-BuildRequires:  gcc-c++
 BuildRequires:  pkgconfig(blosc)
 BuildRequires:  pkgconfig(tbb)
 
@@ -419,6 +424,21 @@ mv %{buildroot}%{_prefix}/lib/python/pxr/Usdviewq/* \
 # https://github.com/PixarAnimationStudios/USD/issues/1088
 rm -vrf '%{buildroot}%{_libdir}/cmake'
 
+# Generate and install man pages. While generating the man pages might more
+# properly go in %%build, it is generally much easier to do this here in a
+# single step, using the entry points installed into the buildroot. This is
+# especially true for the entry points that are Python scripts.
+install -d '%{buildroot}%{_mandir}/man1'
+for cmd in %{buildroot}%{_bindir}/*
+do
+  PYTHONPATH='%{buildroot}%{python3_sitearch}' \
+  LD_LIBRARY_PATH='%{buildroot}%{_libdir}' \
+      help2man \
+      --no-info --no-discard-stderr --version-string='%{version}' \
+      --output="%{buildroot}%{_mandir}/man1/$(basename "${cmd}").1" \
+      "${cmd}"
+done
+
 %check
 %if %{with usdview}
 desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{name}view.desktop
@@ -427,6 +447,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 
 %files
 %doc NOTICE.txt README.md
+
 %{_bindir}/sdfdump
 %{_bindir}/sdffilter
 %{_bindir}/usdGenSchema
@@ -449,6 +470,29 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %{_datadir}/applications/org.open%{name}.%{name}view.desktop
 %{_bindir}/testusdview
 %{_bindir}/usdview
+%endif
+
+%{_mandir}/man1/sdfdump.1*
+%{_mandir}/man1/sdffilter.1*
+%{_mandir}/man1/usdGenSchema.1*
+%{_mandir}/man1/usdcat.1*
+%{_mandir}/man1/usdchecker.1*
+%if %{with draco}
+%{_mandir}/man1/usdcompress.1*
+%endif
+%{_mandir}/man1/usddiff.1*
+%{_mandir}/man1/usddumpcrate.1*
+%{_mandir}/man1/usdedit.1*
+%{_mandir}/man1/usdgenschemafromsdr.1*
+%{_mandir}/man1/usdrecord.1*
+%{_mandir}/man1/usdresolve.1*
+%{_mandir}/man1/usdstitch.1*
+%{_mandir}/man1/usdstitchclips.1*
+%{_mandir}/man1/usdtree.1*
+%{_mandir}/man1/usdzip.1*
+%if %{with usdview}
+%{_mandir}/man1/testusdview.1*
+%{_mandir}/man1/usdview.1*
 %endif
 
 %files -n python3-%{name}
