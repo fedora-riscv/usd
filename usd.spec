@@ -511,14 +511,18 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %license LICENSE.txt
 %doc NOTICE.txt README.md
 %{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version}
-%{_libdir}/%{name}
-%exclude %{_libdir}/%{name}/%{name}/resources/codegenTemplates
+# While headers normally go in -devel packages, those in
+# %%{_libdir}/usd/usd/resources/codegenTemplates/ are used as data (templates
+# for generated code), and it makes sense to package them with the rest of the
+# library resources. (Technically, these are currently used only by the
+# usdGenSchema command-line tool, so they could be moved to the base package,
+# but this is probably too fussy.)
+%{_libdir}/%{name}/
 
 %files devel
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
 %{_libdir}/lib%{name}_%{name}_ms.so
-%{_libdir}/%{name}/%{name}/resources/codegenTemplates/
 
 %if %{with documentation}
 %files doc
