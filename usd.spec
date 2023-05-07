@@ -402,6 +402,10 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
 %install
 %cmake_install
 
+# Blender 3.5.1 requires libusd_ms.so
+ln -s %{_libdir}/lib%{name}_%{name}_ms.so \
+	%{buildroot}%{_libdir}/lib%{name}_ms.so
+
 # Fix python3 files installation
 mkdir -p %{buildroot}%{python3_sitearch}
 mv %{buildroot}%{python3_sitelib}/* %{buildroot}%{python3_sitearch}
@@ -523,6 +527,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %doc BUILDING.md CHANGELOG.md VERSIONS.md
 %{_includedir}/pxr/
 %{_libdir}/lib%{name}_%{name}_ms.so
+%{_libdir}/lib%{name}_ms.so
 
 %if %{with documentation}
 %files doc
