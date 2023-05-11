@@ -406,6 +406,9 @@ extra_flags="${extra_flags-} -DTBB_SUPPRESS_DEPRECATED_MESSAGES=1"
 ln -s %{_libdir}/lib%{name}_%{name}_ms.so \
 	%{buildroot}%{_libdir}/lib%{name}_ms.so
 
+ln -s %{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version} \
+	%{buildroot}%{_libdir}/lib%{name}_ms.so.%{downstream_so_version}
+
 # Fix python3 files installation
 mkdir -p %{buildroot}%{python3_sitearch}
 mv %{buildroot}%{python3_sitelib}/* %{buildroot}%{python3_sitearch}
@@ -515,6 +518,7 @@ desktop-file-validate %{buildroot}%{_datadir}/applications/org.open%{name}.%{nam
 %license LICENSE.txt
 %doc NOTICE.txt README.md
 %{_libdir}/lib%{name}_%{name}_ms.so.%{downstream_so_version}
+%{_libdir}/lib%{name}_ms.so.%{downstream_so_version}
 # While headers normally go in -devel packages, those in
 # %%{_libdir}/usd/usd/resources/codegenTemplates/ are used as data (templates
 # for generated code), and it makes sense to package them with the rest of the
