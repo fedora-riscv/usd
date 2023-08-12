@@ -22,7 +22,7 @@
 
 Name:           usd
 Version:        22.05b
-Release:        %autorelease -b 9
+Release:        %autorelease -b 9 -e rv64
 Summary:        3D VFX pipeline interchange file format
 
 # The entire source is Apache-2.0 except:
@@ -193,7 +193,7 @@ Requires:       python3-%{name}%{?_isa} = %{version}-%{release}
 #
 # Note that pxr/base/arch/assumptions.cpp explicitly tests the machine is not
 # big-endian, and pxr/base/arch/defines.h explicitly enforces x86_64 or ARM64.
-ExclusiveArch:  aarch64 x86_64
+ExclusiveArch:  aarch64 x86_64 riscv64
 
 %description
 Universal Scene Description (USD) is a time-sampled scene
